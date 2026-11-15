@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="card-headcount-level">
+<html lang="zh-Hant" data-app-version="card-level-options">
 <head>
-  <!-- card-headcount-level -->
+  <!-- card-level-options -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1731,6 +1731,8 @@ textarea { min-height: 88px; resize: vertical; }
       min-width: 0;
       overflow-x: hidden;
     }
+
+    /* card-level-options: 人數 1–4, 程度 零基礎/初階/進階 */
 </style>
 </head>
 <body>
@@ -1808,13 +1810,13 @@ textarea { min-height: 88px; resize: vertical; }
       </div>
       <div class="field">
         <label for="formHeadcount">人數（選填）</label>
-        <input id="formHeadcount" type="text" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="例如 2">
+        <input id="formHeadcount" type="text" inputmode="numeric" autocomplete="off" maxlength="1" placeholder="例如 2">
         <div class="resort-chips" id="headcountChips"></div>
         <div class="err"></div>
       </div>
       <div class="field">
         <label for="formLevel">程度（選填）</label>
-        <input id="formLevel" type="text" list="levelList" maxlength="20" autocomplete="off" placeholder="例如 初學">
+        <input id="formLevel" type="text" list="levelList" maxlength="20" autocomplete="off" placeholder="例如 初階">
         <datalist id="levelList"></datalist>
         <div class="resort-chips" id="levelChips"></div>
         <div class="err"></div>
@@ -1906,7 +1908,7 @@ textarea { min-height: 88px; resize: vertical; }
   var THEME_KEY = "ski-work-log-theme";
   var IDB_NAME = "ski-work-log-idb";
   var DEFAULT_RESORTS = ["八方尾根", "栂池高原", "岩岳", "五龍&47", "白馬Cortina", "乘鞍", "鹿島槍", "Sanosaka"];
-  var DEFAULT_LEVELS = ["初學", "初中級", "中級", "進階"];
+  var DEFAULT_LEVELS = ["零基礎", "初階", "進階"];
   var MAX_EDGE = 1600;
   var JPEG_QUALITY = 0.8;
   var THUMB_EDGE = 360;
@@ -2786,7 +2788,7 @@ function normalizeDigits(s) {
   function renderHeadcountChips(selected) {
     var sel = parseHeadcount(selected);
     var html = "";
-    for (var n = 1; n <= 10; n++) {
+    for (var n = 1; n <= 4; n++) {
       var on = sel === n;
       html += '<button type="button" data-headcount="' + n + '" aria-pressed="' + on + '">' + n + "人</button>";
     }
@@ -2918,9 +2920,10 @@ function normalizeDigits(s) {
     }
     if (headcountRaw) {
       headcount = parseHeadcount(headcountRaw);
-      if (headcount == null) {
-        showFieldError("formHeadcount", "請輸入 1 到 99 的人數，或留空");
+      if (headcount == null || headcount > 4) {
+        showFieldError("formHeadcount", "請輸入 1 到 4 的人數，或留空");
         ok = false;
+        headcount = null;
       }
     }
     if (!ok) return;
@@ -3475,7 +3478,13 @@ function normalizeDigits(s) {
       }
     });
     $("formHeadcount").addEventListener("input", function () {
-      renderHeadcountChips($("formHeadcount").value.trim());
+      var raw = $("formHeadcount").value.trim();
+      var n = parseHeadcount(raw);
+      if (n != null && n > 4) {
+        $("formHeadcount").value = "4";
+        raw = "4";
+      }
+      renderHeadcountChips(raw);
     });
     $("levelChips").addEventListener("click", function (e) {
       var btn = e.target.closest("[data-level]");
