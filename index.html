@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hant" data-app-version="2-guest-photos">
 <head>
+  <!-- ski-log-v2-guest-photos -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -545,6 +546,133 @@ textarea { min-height: 88px; resize: vertical; }
   clip: rect(0 0 0 0);
 }
 
+/* guest photos */
+.card { padding: 0; overflow: hidden; }
+.card-main {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  background: transparent;
+  color: inherit;
+}
+.card-main:active { opacity: 0.85; }
+.thumbs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 16px 12px;
+  scrollbar-width: none;
+}
+.thumbs:empty { display: none; }
+.thumbs::-webkit-scrollbar { display: none; }
+.thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--surface-2);
+  padding: 0;
+}
+.thumb img, .photo-cell img, .album-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.guest-line { margin-top: 4px; font-size: 13px; color: var(--text); font-weight: 650; }
+.photo-grid, .album-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.photo-cell, .album-thumb {
+  position: relative;
+  aspect-ratio: 1;
+  padding: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.photo-cell .del {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(15, 18, 22, 0.62);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.photo-cell .del:active { transform: scale(0.94); }
+.photo-hint { font-size: 12px; color: var(--muted); margin: 8px 0 0; line-height: 1.45; }
+.photo-progress { font-size: 13px; color: var(--muted); margin-top: 6px; min-height: 1.2em; }
+.viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: #000;
+  color: #fff;
+  display: none;
+  flex-direction: column;
+  padding-top: var(--safe-t);
+  padding-bottom: var(--safe-b);
+}
+.viewer.show { display: flex; }
+.viewer-top, .viewer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  min-height: 56px;
+}
+.viewer-stage {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+.viewer-stage img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  touch-action: pan-y;
+}
+.viewer-nav {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 28%;
+  background: transparent;
+}
+.viewer-nav.prev { left: 0; }
+.viewer-nav.next { right: 0; }
+.viewer .icon-btn { background: rgba(255,255,255,0.12); color: #fff; box-shadow: none; }
+.viewer-meta { font-size: 14px; opacity: 0.9; flex: 1; padding: 0 8px; }
+.album-section { margin-bottom: 18px; }
+.album-section h3 {
+  font-size: 14px;
+  font-weight: 750;
+  margin: 0 0 8px;
+}
+.album-section h3 span { color: var(--muted); font-weight: 600; }
+#albumSheet.sheet { max-height: min(94vh, 960px); }
+
+  
+.photo-cell .photo-open { width:100%; height:100%; padding:0; display:block; color:inherit; }
+.overlay.front { z-index: 100; }
+.dialog { z-index: 110; }
   </style>
 </head>
 <body>
@@ -554,6 +682,9 @@ textarea { min-height: 88px; resize: vertical; }
       <h1>滑雪工作紀錄</h1>
     </div>
     <button type="button" class="icon-btn" id="themeBtn" aria-label="切換深色模式"></button>
+    <button type="button" class="icon-btn" id="albumBtn" aria-label="相簿">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M21 16l-5-4-8 6"/></svg>
+    </button>
     <button type="button" class="icon-btn" id="backupBtn" aria-label="備份與還原">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h16"/><path d="M18 10v8l3-3M18 18l-3-3"/></svg>
     </button>
@@ -612,8 +743,24 @@ textarea { min-height: 88px; resize: vertical; }
         <div class="err"></div>
       </div>
       <div class="field">
+        <label for="formGuest">客人名字（選填）</label>
+        <input id="formGuest" type="text" list="guestList" maxlength="40" autocomplete="off" placeholder="例如 小明">
+        <datalist id="guestList"></datalist>
+        <div class="err"></div>
+      </div>
+      <div class="field">
         <label for="formNote">備註（選填）</label>
-        <textarea id="formNote" maxlength="500" placeholder="學員、集合時間等"></textarea>
+        <textarea id="formNote" maxlength="500" placeholder="集合時間等"></textarea>
+        <div class="err"></div>
+      </div>
+      <div class="field" id="feature-guest-photos">
+        <label>照片（選填）</label>
+        <div class="photo-grid" id="formPhotos"></div>
+        <p class="photo-hint">照片只存在這支手機，不會上傳到網路。換手機前請先匯出備份。</p>
+        <p class="photo-progress" id="photoProgress"></p>
+        <div id="photoCount" class="photo-hint"></div>
+        <button type="button" class="btn ghost" id="addPhotosBtn" style="margin-top:8px">加入照片</button>
+        <input id="photoInput" type="file" accept="image/*" multiple hidden>
         <div class="err"></div>
       </div>
       <div class="actions">
@@ -627,10 +774,10 @@ textarea { min-height: 88px; resize: vertical; }
   <section class="sheet" id="backupSheet" role="dialog" aria-modal="true" aria-labelledby="backupTitle">
     <div class="grab" aria-hidden="true"></div>
     <h2 id="backupTitle">備份與還原</h2>
-    <p class="hint">資料只存在這支手機目前開啟這個檔案的瀏覽器裡。換手機、清除網站資料，或把檔案移到別的位置再打開前，請先匯出備份。iPhone 請用分享列「用 Safari 開啟」，不要只停在檔案 App 的預覽，否則按鈕可能沒反應。</p>
-    <button type="button" class="menu-btn" id="exportJson">匯出 JSON 備份<span class="sub">完整還原用</span></button>
-    <button type="button" class="menu-btn" id="exportCsv">匯出 CSV 表格<span class="sub">可用試算表打開</span></button>
-    <button type="button" class="menu-btn" id="importBtn">匯入 JSON 備份<span class="sub">合併或取代現有紀錄</span></button>
+    <p class="hint">紀錄與照片都只存在這支手機的瀏覽器裡，不會上傳。換手機或清除網站資料前，請先匯出 JSON 備份（含照片）。CSV 只含表格，不含照片。</p>
+    <button type="button" class="menu-btn" id="exportJson">匯出 JSON 備份<span class="sub">含照片，完整還原用</span></button>
+    <button type="button" class="menu-btn" id="exportCsv">匯出 CSV 表格<span class="sub">可用試算表打開，不含照片</span></button>
+    <button type="button" class="menu-btn" id="importBtn">匯入 JSON 備份<span class="sub">可還原紀錄與照片</span></button>
     <input id="fileInput" type="file" accept="application/json,.json,text/json" hidden>
     <div class="copy-box" id="copyBox">
       <textarea id="copyArea" readonly></textarea>
@@ -640,6 +787,34 @@ textarea { min-height: 88px; resize: vertical; }
       <button type="button" class="btn ghost" id="backupClose">關閉</button>
     </div>
   </section>
+
+
+  <section class="sheet" id="albumSheet" role="dialog" aria-modal="true" aria-labelledby="albumTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <h2 id="albumTitle">相簿 <span id="albumCount" style="font-weight:600;color:var(--muted);font-size:14px"></span></h2>
+    <p class="hint">依日期和客人名字分組。照片只存在這支手機，不會上傳到網路。</p>
+    <div id="albumBody"></div>
+    <div class="actions">
+      <button type="button" class="btn ghost" id="albumClose">關閉</button>
+    </div>
+  </section>
+
+  <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="查看照片">
+    <div class="viewer-top">
+      <button type="button" class="icon-btn" id="viewerClose" aria-label="關閉">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <div class="viewer-meta" id="viewerMeta"></div>
+      <button type="button" class="icon-btn" id="viewerDelete" aria-label="刪除這張照片">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></svg>
+      </button>
+    </div>
+    <div class="viewer-stage" id="viewerStage">
+      <button type="button" class="viewer-nav prev" id="viewerPrev" aria-label="上一張"></button>
+      <img id="viewerImg" alt="">
+      <button type="button" class="viewer-nav next" id="viewerNext" aria-label="下一張"></button>
+    </div>
+  </div>
 
   <div class="dialog" id="confirmDialog" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmText">
     <h2 id="confirmTitle">請確認</h2>
@@ -659,13 +834,30 @@ textarea { min-height: 88px; resize: vertical; }
 
   var STORAGE_KEY = "ski-work-log-v1";
   var THEME_KEY = "ski-work-log-theme";
+  var IDB_NAME = "ski-work-log-idb";
   var DEFAULT_RESORTS = ["八方尾根", "栂池高原", "岩岳", "五龍&47", "白馬Cortina", "乘鞍", "鹿島槍", "Sanosaka"];
+  var MAX_EDGE = 1600;
+  var JPEG_QUALITY = 0.8;
+  var THUMB_EDGE = 360;
+  var MAX_PHOTOS_PER_RECORD = 40;
 
   var records = [];
   var filter = "all";
   var editingId = null;
+  var formRecordId = null;
+  var formIsNew = false;
+  var formSaved = false;
   var openPanel = null;
   var toastTimer = 0;
+  var dbPromise = null;
+  var photoCache = null;
+  var urlCache = {};
+  var pendingImportText = "";
+  var pendingPhotoId = null;
+  var viewerList = [];
+  var viewerIndex = 0;
+  var viewerOpen = false;
+  var viewerTouchX = 0;
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -737,6 +929,8 @@ textarea { min-height: 88px; resize: vertical; }
 
   function boardLabel(b) { return b === "snowboard" ? "單板" : "雙板"; }
 
+  function guestLabel(name) { return name && String(name).trim() ? String(name).trim() : "未填名字"; }
+
   function normalizeDigits(s) {
     return String(s)
       .replace(/[０-９]/g, function (ch) { return String.fromCharCode(ch.charCodeAt(0) - 0xFF10 + 0x30); })
@@ -781,6 +975,7 @@ textarea { min-height: 88px; resize: vertical; }
       price: Math.floor(Number(r.price)),
       resort: String(r.resort).trim(),
       board: r.board,
+      guestName: r.guestName ? String(r.guestName).trim() : "",
       note: r.note ? String(r.note) : "",
       createdAt: r.createdAt || Date.now(),
       updatedAt: r.updatedAt || r.createdAt || Date.now()
@@ -789,12 +984,216 @@ textarea { min-height: 88px; resize: vertical; }
 
   function persist() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, records: records }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 2, records: records }));
       return true;
     } catch (e) {
       toast("無法儲存。瀏覽器可能封鎖了本機儲存空間，請改用匯出備份。");
       return false;
     }
+  }
+
+  function openDB() {
+    if (dbPromise) return dbPromise;
+    dbPromise = new Promise(function (resolve, reject) {
+      if (!window.indexedDB) {
+        reject(new Error("no-idb"));
+        return;
+      }
+      var req = indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = function () {
+        var db = req.result;
+        if (!db.objectStoreNames.contains("photos")) {
+          var store = db.createObjectStore("photos", { keyPath: "id" });
+          store.createIndex("recordId", "recordId", { unique: false });
+        }
+      };
+      req.onsuccess = function () { resolve(req.result); };
+      req.onerror = function () { reject(req.error); };
+    });
+    return dbPromise;
+  }
+
+  function idbReq(store, method, value) {
+    return new Promise(function (resolve, reject) {
+      var req = store[method](value);
+      req.onsuccess = function () { resolve(req.result); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+
+  async function allPhotos() {
+    if (photoCache) return photoCache;
+    var db = await openDB();
+    photoCache = await new Promise(function (resolve, reject) {
+      var tx = db.transaction("photos", "readonly");
+      var req = tx.objectStore("photos").getAll();
+      req.onsuccess = function () { resolve(req.result || []); };
+      req.onerror = function () { reject(req.error); };
+    });
+    return photoCache;
+  }
+
+  function invalidatePhotos() { photoCache = null; }
+
+  async function photosForRecord(recordId) {
+    var list = await allPhotos();
+    return list.filter(function (p) { return p.recordId === recordId; })
+      .sort(function (a, b) { return (a.createdAt || 0) - (b.createdAt || 0); });
+  }
+
+  async function putPhoto(photo) {
+    var db = await openDB();
+    await new Promise(function (resolve, reject) {
+      var tx = db.transaction("photos", "readwrite");
+      tx.oncomplete = function () { resolve(); };
+      tx.onerror = function () { reject(tx.error); };
+      tx.objectStore("photos").put(photo);
+    });
+    invalidatePhotos();
+  }
+
+  async function deletePhotoById(id) {
+    var db = await openDB();
+    await new Promise(function (resolve, reject) {
+      var tx = db.transaction("photos", "readwrite");
+      tx.oncomplete = function () { resolve(); };
+      tx.onerror = function () { reject(tx.error); };
+      tx.objectStore("photos").delete(id);
+    });
+    revokePhotoUrl(id);
+    invalidatePhotos();
+  }
+
+  async function deletePhotosForRecord(recordId) {
+    var list = await photosForRecord(recordId);
+    if (!list.length) return;
+    var db = await openDB();
+    await new Promise(function (resolve, reject) {
+      var tx = db.transaction("photos", "readwrite");
+      tx.oncomplete = function () { resolve(); };
+      tx.onerror = function () { reject(tx.error); };
+      var store = tx.objectStore("photos");
+      list.forEach(function (p) { store.delete(p.id); });
+    });
+    list.forEach(function (p) { revokePhotoUrl(p.id); });
+    invalidatePhotos();
+  }
+
+  async function clearAllPhotos() {
+    var db = await openDB();
+    await new Promise(function (resolve, reject) {
+      var tx = db.transaction("photos", "readwrite");
+      tx.oncomplete = function () { resolve(); };
+      tx.onerror = function () { reject(tx.error); };
+      tx.objectStore("photos").clear();
+    });
+    Object.keys(urlCache).forEach(function (k) {
+      try { URL.revokeObjectURL(urlCache[k]); } catch (e) {}
+    });
+    urlCache = {};
+    invalidatePhotos();
+  }
+
+  function photoURL(photo, useThumb) {
+    var key = photo.id + (useThumb && photo.thumb ? "-t" : "-f");
+    if (urlCache[key]) return urlCache[key];
+    var blob = useThumb && photo.thumb ? photo.thumb : photo.blob;
+    urlCache[key] = URL.createObjectURL(blob);
+    return urlCache[key];
+  }
+
+  function revokePhotoUrl(id) {
+    ["-t", "-f"].forEach(function (suf) {
+      var key = id + suf;
+      if (urlCache[key]) {
+        try { URL.revokeObjectURL(urlCache[key]); } catch (e) {}
+        delete urlCache[key];
+      }
+    });
+  }
+
+  function canvasToBlob(canvas, type, quality) {
+    return new Promise(function (resolve, reject) {
+      canvas.toBlob(function (blob) {
+        if (blob) resolve(blob);
+        else reject(new Error("toBlob failed"));
+      }, type, quality);
+    });
+  }
+
+  function loadImageFromFile(file) {
+    if (typeof createImageBitmap === "function") {
+      return createImageBitmap(file, { imageOrientation: "from-image" }).catch(function () {
+        return createImageBitmap(file);
+      });
+    }
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        resolve(img);
+      };
+      img.onerror = function () {
+        URL.revokeObjectURL(url);
+        reject(new Error("image load failed"));
+      };
+      img.src = url;
+    });
+  }
+
+  function drawScaled(source, maxEdge) {
+    var sw = source.naturalWidth || source.width;
+    var sh = source.naturalHeight || source.height;
+    var w = sw;
+    var h = sh;
+    if (w > maxEdge || h > maxEdge) {
+      var scale = maxEdge / Math.max(w, h);
+      w = Math.max(1, Math.round(w * scale));
+      h = Math.max(1, Math.round(h * scale));
+    }
+    var canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    var ctx = canvas.getContext("2d");
+    ctx.drawImage(source, 0, 0, w, h);
+    return { canvas: canvas, width: w, height: h };
+  }
+
+  async function compressImage(file) {
+    var source = await loadImageFromFile(file);
+    var full = drawScaled(source, MAX_EDGE);
+    var thumb = drawScaled(source, THUMB_EDGE);
+    if (source.close) try { source.close(); } catch (e) {}
+    var blob = await canvasToBlob(full.canvas, "image/jpeg", JPEG_QUALITY);
+    var thumbBlob = await canvasToBlob(thumb.canvas, "image/jpeg", 0.7);
+    return { blob: blob, thumb: thumbBlob, width: full.width, height: full.height };
+  }
+
+  function blobToBase64(blob) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        var s = String(reader.result || "");
+        var i = s.indexOf(",");
+        resolve(i >= 0 ? s.slice(i + 1) : s);
+      };
+      reader.onerror = function () { reject(reader.error); };
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  function base64ToBlob(b64, mime) {
+    var bin = atob(b64);
+    var arr = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return new Blob([arr], { type: mime || "image/jpeg" });
+  }
+
+  function formatBytes(n) {
+    if (n < 1024) return n + " B";
+    if (n < 1048576) return (n / 1024).toFixed(1) + " KB";
+    return (n / 1048576).toFixed(1) + " MB";
   }
 
   function applyTheme(theme) {
@@ -883,6 +1282,17 @@ textarea { min-height: 88px; resize: vertical; }
     return DEFAULT_RESORTS.concat(extras);
   }
 
+  function usedGuests() {
+    var seen = {};
+    var names = [];
+    records.forEach(function (r) {
+      var n = (r.guestName || "").trim();
+      if (n && !seen[n]) { seen[n] = true; names.push(n); }
+    });
+    names.sort(function (a, b) { return a.localeCompare(b, "zh-Hant"); });
+    return names;
+  }
+
   function toast(msg) {
     var el = $("toast");
     el.textContent = msg;
@@ -896,10 +1306,15 @@ textarea { min-height: 88px; resize: vertical; }
   }
 
   function closePanels(fromPop) {
-    ["formSheet", "backupSheet"].forEach(function (id) {
-      $(id).classList.remove("show");
+    if (viewerOpen) closeViewer(true);
+    if (openPanel === "form" && formIsNew && !formSaved && formRecordId) {
+      deletePhotosForRecord(formRecordId).catch(function () {});
+    }
+    ["formSheet", "backupSheet", "albumSheet"].forEach(function (id) {
+      var el = $(id);
+      if (el) el.classList.remove("show");
     });
-    $("confirmDialog").classList.remove("show");
+    $("confirmDialog").classList.remove("show"); $("overlay").classList.remove("front");
     showOverlay(false);
     var was = openPanel;
     openPanel = null;
@@ -913,6 +1328,7 @@ textarea { min-height: 88px; resize: vertical; }
     showOverlay(true);
     if (name === "form") $("formSheet").classList.add("show");
     if (name === "backup") $("backupSheet").classList.add("show");
+    if (name === "album") $("albumSheet").classList.add("show");
     if (!openPanel) history.pushState({ skiLog: name }, "");
     else history.replaceState({ skiLog: name }, "");
     openPanel = name;
@@ -994,16 +1410,38 @@ textarea { min-height: 88px; resize: vertical; }
       var sum = summarize(g.items);
       var cards = g.items.map(function (r) {
         var note = r.note ? '<div class="note">' + esc(r.note) + "</div>" : "";
+        var guest = r.guestName ? '<div class="guest-line">' + esc(r.guestName) + "</div>" : "";
         return (
-          '<button type="button" class="card" data-id="' + esc(r.id) + '" aria-label="編輯 ' + esc(formatDate(r.date)) + " " + esc(r.resort) + '">' +
-            '<div class="top"><div class="date">' + esc(formatDateShort(r.date)) + "</div><div class=\"price\">" + formatYen(r.price) + "</div></div>" +
-            '<div class="meta"><span class="badges"><span class="badge">' + periodLabel(r.period) + "</span><span class=\"badge\">" + boardLabel(r.board) + "</span></span> · " + esc(r.resort) + "</div>" +
-            note +
-          "</button>"
+          '<article class="card" data-id="' + esc(r.id) + '">' +
+            '<button type="button" class="card-main" data-edit="' + esc(r.id) + '" aria-label="編輯 ' + esc(formatDate(r.date)) + " " + esc(r.resort) + '">' +
+              '<div class="top"><div class="date">' + esc(formatDateShort(r.date)) + "</div><div class=\"price\">" + formatYen(r.price) + "</div></div>" +
+              '<div class="meta"><span class="badges"><span class="badge">' + periodLabel(r.period) + "</span><span class=\"badge\">" + boardLabel(r.board) + "</span></span> · " + esc(r.resort) + "</div>" +
+              guest + note +
+            "</button>" +
+            '<div class="thumbs" data-thumbs-for="' + esc(r.id) + '"></div>' +
+          "</article>"
         );
       }).join("");
       return '<div class="group-h"><span>' + esc(monthLabel(g.key)) + "</span><span class=\"meta\">" + formatDays(sum.days) + " 天 · " + formatYen(sum.income) + "</span></div>" + cards;
     }).join("");
+    hydrateThumbs();
+  }
+
+  async function hydrateThumbs() {
+    var photos;
+    try { photos = await allPhotos(); } catch (e) { return; }
+    var byRec = {};
+    photos.forEach(function (p) {
+      (byRec[p.recordId] = byRec[p.recordId] || []).push(p);
+    });
+    document.querySelectorAll("[data-thumbs-for]").forEach(function (el) {
+      var recId = el.getAttribute("data-thumbs-for");
+      var list = (byRec[recId] || []).slice().sort(function (a, b) { return (a.createdAt || 0) - (b.createdAt || 0); });
+      if (!list.length) { el.innerHTML = ""; return; }
+      el.innerHTML = list.map(function (p) {
+        return '<button type="button" class="thumb" data-photo="' + esc(p.id) + '" data-record="' + esc(recId) + '" aria-label="查看照片"><img alt="" src="' + photoURL(p, true) + '"></button>';
+      }).join("");
+    });
   }
 
   function render() {
@@ -1026,6 +1464,11 @@ textarea { min-height: 88px; resize: vertical; }
     $("resortList").innerHTML = usedResorts().map(function (name) {
       return '<option value="' + esc(name) + '">';
     }).join("");
+    if ($("guestList")) {
+      $("guestList").innerHTML = usedGuests().map(function (name) {
+        return '<option value="' + esc(name) + '">';
+      }).join("");
+    }
   }
 
   function renderResortChips(selected) {
@@ -1034,6 +1477,20 @@ textarea { min-height: 88px; resize: vertical; }
       return '<button type="button" data-resort="' + esc(name) + '" aria-pressed="' + on + '">' + esc(name) + "</button>";
     }).join("");
     $("resortChips").innerHTML = html;
+  }
+
+  async function renderFormPhotos() {
+    var box = $("formPhotos");
+    if (!box || !formRecordId) return;
+    var list;
+    try { list = await photosForRecord(formRecordId); } catch (e) { list = []; }
+    box.innerHTML = list.map(function (p) {
+      return '<div class="photo-cell">' +
+        '<button type="button" class="photo-open" data-photo="' + esc(p.id) + '" aria-label="查看照片"><img alt="" src="' + photoURL(p, true) + '"></button>' +
+        '<button type="button" class="del" data-del-photo="' + esc(p.id) + '" aria-label="刪除這張照片">×</button>' +
+        "</div>";
+    }).join("");
+    $("photoCount").textContent = list.length ? ("已有 " + list.length + " 張") : "";
   }
 
   function setSeg(name, value) {
@@ -1059,6 +1516,9 @@ textarea { min-height: 88px; resize: vertical; }
 
   function openForm(rec) {
     clearFieldErrors();
+    formSaved = false;
+    formIsNew = !rec;
+    formRecordId = rec ? rec.id : uid();
     editingId = rec ? rec.id : null;
     $("formTitle").textContent = rec ? "編輯紀錄" : "新增紀錄";
     $("formDate").value = rec ? rec.date : todayISO();
@@ -1066,10 +1526,13 @@ textarea { min-height: 88px; resize: vertical; }
     setSeg("board", rec ? rec.board : "snowboard");
     $("formPrice").value = rec ? String(rec.price) : "";
     $("formResort").value = rec ? rec.resort : "";
+    $("formGuest").value = rec && rec.guestName ? rec.guestName : "";
     $("formNote").value = rec ? rec.note : "";
     $("formDelete").style.display = rec ? "block" : "none";
+    $("photoProgress").textContent = "";
     renderResortChips(rec ? rec.resort : "");
     $("copyBox").classList.remove("show");
+    renderFormPhotos();
     openPanelNamed("form");
     setTimeout(function () { $("formDate").blur(); }, 0);
   }
@@ -1081,6 +1544,7 @@ textarea { min-height: 88px; resize: vertical; }
     var board = getSeg("board");
     var price = parsePrice($("formPrice").value);
     var resort = $("formResort").value.trim();
+    var guestName = $("formGuest").value.trim();
     var note = $("formNote").value.trim();
     var ok = true;
     if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -1113,56 +1577,268 @@ textarea { min-height: 88px; resize: vertical; }
         return;
       }
       records[idx] = Object.assign({}, records[idx], {
-        date: date, period: period, price: price, resort: resort, board: board, note: note, updatedAt: now
+        date: date, period: period, price: price, resort: resort, board: board,
+        guestName: guestName, note: note, updatedAt: now
       });
     } else {
       records.push({
-        id: uid(), date: date, period: period, price: price, resort: resort, board: board, note: note,
-        createdAt: now, updatedAt: now
+        id: formRecordId, date: date, period: period, price: price, resort: resort, board: board,
+        guestName: guestName, note: note, createdAt: now, updatedAt: now
       });
     }
     if (!persist()) return;
+    formSaved = true;
     closePanels();
     render();
     toast(editingId ? "已更新" : "已記下一筆");
   }
 
-  function askDelete() {
+  async function askDelete() {
     if (!editingId) return;
     var rec = records.find(function (r) { return r.id === editingId; });
+    var n = 0;
+    try { n = (await photosForRecord(editingId)).length; } catch (e) {}
     var text = rec
       ? "確定刪除 " + formatDate(rec.date) + "「" + rec.resort + "」這筆紀錄？刪除後無法復原。"
       : "確定刪除這筆紀錄？刪除後無法復原。";
+    if (n) text += "這筆紀錄的 " + n + " 張照片也會一起刪除。";
     $("confirmTitle").textContent = "刪除紀錄";
     $("confirmText").textContent = text;
     $("confirmOk").textContent = "刪除";
     $("confirmOk").className = "btn danger";
     $("confirmDialog").dataset.mode = "delete";
     $("confirmDialog").classList.add("show");
+    $("overlay").classList.add("front");
     showOverlay(true);
   }
 
-  function doDelete() {
+  async function doDelete() {
     if (!editingId) return;
-    records = records.filter(function (r) { return r.id !== editingId; });
+    var id = editingId;
+    try { await deletePhotosForRecord(id); } catch (e) {}
+    records = records.filter(function (r) { return r.id !== id; });
     persist();
-    $("confirmDialog").classList.remove("show");
+    formSaved = true;
+    formIsNew = false;
+    $("confirmDialog").classList.remove("show"); $("overlay").classList.remove("front");
     closePanels();
     render();
     toast("已刪除");
   }
 
-  function exportPayload() {
-    return {
+  function askDeletePhoto(photoId) {
+    pendingPhotoId = photoId;
+    $("confirmTitle").textContent = "刪除照片";
+    $("confirmText").textContent = "確定刪除這張照片？刪除後無法復原。";
+    $("confirmOk").textContent = "刪除";
+    $("confirmOk").className = "btn danger";
+    $("confirmAlt").style.display = "none";
+    $("confirmDialog").dataset.mode = "delete-photo";
+    $("confirmDialog").classList.add("show");
+    $("overlay").classList.add("front");
+    showOverlay(true);
+  }
+
+  async function doDeletePhoto() {
+    if (!pendingPhotoId) return;
+    var id = pendingPhotoId;
+    pendingPhotoId = null;
+    try { await deletePhotoById(id); } catch (e) {
+      toast("無法刪除照片");
+      return;
+    }
+    $("confirmDialog").classList.remove("show"); $("overlay").classList.remove("front");
+    if (viewerOpen) {
+      viewerList = viewerList.filter(function (x) { return x !== id; });
+      if (!viewerList.length) closeViewer();
+      else {
+        if (viewerIndex >= viewerList.length) viewerIndex = viewerList.length - 1;
+        showViewerImage();
+      }
+    }
+    if (openPanel === "form") {
+      showOverlay(true);
+      renderFormPhotos();
+    } else if (openPanel === "album") {
+      showOverlay(true);
+      renderAlbum();
+    }
+    hydrateThumbs();
+    toast("已刪除照片");
+  }
+
+  async function addFiles(fileList) {
+    var files = Array.prototype.slice.call(fileList || []).filter(function (f) {
+      return f && (f.type.indexOf("image/") === 0 || !f.type);
+    });
+    if (!files.length) return;
+    var existing;
+    try { existing = await photosForRecord(formRecordId); } catch (e) {
+      toast("這支瀏覽器無法儲存照片");
+      return;
+    }
+    var room = MAX_PHOTOS_PER_RECORD - existing.length;
+    if (room <= 0) {
+      toast("每筆最多 " + MAX_PHOTOS_PER_RECORD + " 張照片");
+      return;
+    }
+    if (files.length > room) {
+      files = files.slice(0, room);
+      toast("已達上限，只加入前 " + room + " 張");
+    }
+    var ok = 0, fail = 0;
+    for (var i = 0; i < files.length; i++) {
+      $("photoProgress").textContent = "正在處理照片 " + (i + 1) + "／" + files.length + "…";
+      try {
+        var result = await compressImage(files[i]);
+        await putPhoto({
+          id: uid(),
+          recordId: formRecordId,
+          createdAt: Date.now() + i,
+          width: result.width,
+          height: result.height,
+          mime: "image/jpeg",
+          blob: result.blob,
+          thumb: result.thumb
+        });
+        ok += 1;
+        renderFormPhotos();
+      } catch (e) {
+        fail += 1;
+      }
+    }
+    $("photoProgress").textContent = "";
+    if (ok && !fail) toast("已加入 " + ok + " 張照片");
+    else if (ok && fail) toast("已加入 " + ok + " 張，" + fail + " 張無法處理");
+    else toast("照片無法處理。若是 iPhone 的 HEIC，請再試一次或改用 JPG。");
+  }
+
+  function recordById(id) {
+    return records.find(function (r) { return r.id === id; });
+  }
+
+  function openViewer(ids, index) {
+    if (!ids || !ids.length) return;
+    viewerList = ids.slice();
+    viewerIndex = Math.max(0, Math.min(index || 0, viewerList.length - 1));
+    $("viewer").classList.add("show");
+    if (!viewerOpen) history.pushState({ skiLogViewer: 1 }, "");
+    viewerOpen = true;
+    showViewerImage();
+  }
+
+  function closeViewer(fromPop) {
+    $("viewer").classList.remove("show");
+    $("viewerImg").removeAttribute("src");
+    var was = viewerOpen;
+    viewerOpen = false;
+    if (was && !fromPop && history.state && history.state.skiLogViewer) history.back();
+  }
+
+  async function showViewerImage() {
+    var id = viewerList[viewerIndex];
+    var photos;
+    try { photos = await allPhotos(); } catch (e) { return; }
+    var photo = photos.find(function (p) { return p.id === id; });
+    if (!photo) return;
+    $("viewerImg").src = photoURL(photo, false);
+    var rec = recordById(photo.recordId);
+    var meta = [];
+    if (rec) {
+      meta.push(formatDate(rec.date));
+      meta.push(guestLabel(rec.guestName));
+      if (rec.resort) meta.push(rec.resort);
+    }
+    $("viewerMeta").textContent = meta.join(" · ") + (viewerList.length > 1 ? "  " + (viewerIndex + 1) + "/" + viewerList.length : "");
+    $("viewerPrev").style.visibility = viewerList.length > 1 ? "visible" : "hidden";
+    $("viewerNext").style.visibility = viewerList.length > 1 ? "visible" : "hidden";
+  }
+
+  function viewerStep(dir) {
+    if (viewerList.length < 2) return;
+    viewerIndex = (viewerIndex + dir + viewerList.length) % viewerList.length;
+    showViewerImage();
+  }
+
+  async function renderAlbum() {
+    var box = $("albumBody");
+    var photos;
+    try { photos = await allPhotos(); } catch (e) {
+      box.innerHTML = '<div class="empty"><strong>無法開啟相簿</strong>這支瀏覽器可能封鎖了本機資料庫。</div>';
+      return;
+    }
+    $("albumCount").textContent = photos.length ? ("共 " + photos.length + " 張") : "";
+    if (!photos.length) {
+      box.innerHTML = '<div class="empty"><strong>還沒有照片</strong>在紀錄裡加入客人照片後，會顯示在這裡。照片只存在這支手機，不會上傳。</div>';
+      return;
+    }
+    var recMap = {};
+    records.forEach(function (r) { recMap[r.id] = r; });
+    var groups = [];
+    var map = {};
+    photos.slice().sort(function (a, b) {
+      var ra = recMap[a.recordId];
+      var rb = recMap[b.recordId];
+      var da = ra ? ra.date : "";
+      var db = rb ? rb.date : "";
+      if (da !== db) return da < db ? 1 : -1;
+      var ga = ra ? guestLabel(ra.guestName) : "未填名字";
+      var gb = rb ? guestLabel(rb.guestName) : "未填名字";
+      if (ga !== gb) return ga.localeCompare(gb, "zh-Hant");
+      return (a.createdAt || 0) - (b.createdAt || 0);
+    }).forEach(function (p) {
+      var rec = recMap[p.recordId];
+      var date = rec ? rec.date : "unknown";
+      var guest = rec ? guestLabel(rec.guestName) : "未填名字";
+      var key = date + "\t" + guest;
+      if (!map[key]) {
+        map[key] = { date: date, guest: guest, rec: rec, items: [] };
+        groups.push(map[key]);
+      }
+      map[key].items.push(p);
+    });
+    box.innerHTML = groups.map(function (g) {
+      var title = (g.date !== "unknown" ? formatDate(g.date) : "未對應日期") + " · " + g.guest;
+      var sub = g.rec && g.rec.resort ? " · " + g.rec.resort : "";
+      var grid = g.items.map(function (p) {
+        return '<button type="button" class="album-thumb" data-photo="' + esc(p.id) + '" data-record="' + esc(p.recordId) + '" aria-label="查看照片"><img alt="" src="' + photoURL(p, true) + '"></button>';
+      }).join("");
+      return '<section class="album-section"><h3>' + esc(title) + "<span>" + esc(sub) + "</span></h3><div class=\"album-grid\">" + grid + "</div></section>";
+    }).join("");
+  }
+
+  async function exportFullBackup() {
+    toast("正在準備備份…");
+    var photos = [];
+    try { photos = await allPhotos(); } catch (e) { photos = []; }
+    var encoded = [];
+    for (var i = 0; i < photos.length; i++) {
+      var p = photos[i];
+      encoded.push({
+        id: p.id,
+        recordId: p.recordId,
+        createdAt: p.createdAt,
+        width: p.width,
+        height: p.height,
+        mime: p.mime || "image/jpeg",
+        data: await blobToBase64(p.blob)
+      });
+    }
+    var payload = {
       app: "ski-work-log",
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
-      records: records
+      records: records,
+      photos: encoded
     };
+    var json = JSON.stringify(payload);
+    var size = formatBytes(new Blob([json]).size);
+    await shareOrDownload("ski-log-" + filenameStamp() + ".json", json, "application/json");
+    toast("備份約 " + size + "，含 " + records.length + " 筆紀錄、" + encoded.length + " 張照片");
   }
 
   function toCSV(list) {
-    var header = ["日期", "時段", "價錢", "雪場", "板類", "備註"];
+    var header = ["日期", "時段", "價錢", "雪場", "板類", "客人名字", "備註"];
     function cell(v) {
       var s = String(v == null ? "" : v);
       if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
@@ -1170,7 +1846,7 @@ textarea { min-height: 88px; resize: vertical; }
     }
     var lines = [header.join(",")];
     sortRecords(list).slice().reverse().forEach(function (r) {
-      lines.push([r.date, periodLabel(r.period), r.price, r.resort, boardLabel(r.board), r.note].map(cell).join(","));
+      lines.push([r.date, periodLabel(r.period), r.price, r.resort, boardLabel(r.board), r.guestName || "", r.note].map(cell).join(","));
     });
     return "\uFEFF" + lines.join("\r\n");
   }
@@ -1209,14 +1885,18 @@ textarea { min-height: 88px; resize: vertical; }
       toast("已開始下載");
       return;
     } catch (e) {}
+    if (typeof content === "string" && content.length > 200000) {
+      toast("檔案太大，無法複製，請改用可下載的瀏覽器再試");
+      return;
+    }
     $("copyBox").classList.add("show");
-    $("copyArea").value = content.replace(/^\uFEFF/, "");
+    $("copyArea").value = String(content).replace(/^\uFEFF/, "");
     $("copyArea").focus();
     $("copyArea").select();
     toast("無法直接下載，請複製下方內容自行存檔");
   }
 
-  function importJSONText(text, mode) {
+  async function importJSONText(text, mode) {
     var data;
     try { data = JSON.parse(text); } catch (e) {
       toast("這個檔案不是有效的 JSON");
@@ -1231,12 +1911,14 @@ textarea { min-height: 88px; resize: vertical; }
     }
     var valid = incoming.filter(isValidRecord).map(normalizeRecord);
     var skipped = incoming.length - valid.length;
-    if (!valid.length) {
+    var incomingPhotos = (data && Array.isArray(data.photos)) ? data.photos : [];
+    if (!valid.length && !incomingPhotos.length) {
       toast("沒有可匯入的紀錄");
       return;
     }
     if (mode === "replace") {
       records = valid;
+      try { await clearAllPhotos(); } catch (e) {}
     } else {
       var byId = {};
       records.forEach(function (r) { byId[r.id] = r; });
@@ -1244,20 +1926,68 @@ textarea { min-height: 88px; resize: vertical; }
       records = Object.keys(byId).map(function (k) { return byId[k]; });
     }
     if (!persist()) return;
+    var photoOk = 0, photoFail = 0;
+    for (var i = 0; i < incomingPhotos.length; i++) {
+      var p = incomingPhotos[i];
+      try {
+        if (!p || !p.data || !p.recordId) { photoFail += 1; continue; }
+        var blob = base64ToBlob(p.data, p.mime || "image/jpeg");
+        var thumb = blob;
+        var width = p.width || 0;
+        var height = p.height || 0;
+        try {
+          var result = await compressImage(blob);
+          thumb = result.thumb;
+          if (!width) width = result.width;
+          if (!height) height = result.height;
+        } catch (e) {}
+        await putPhoto({
+          id: p.id || uid(),
+          recordId: p.recordId,
+          createdAt: p.createdAt || Date.now(),
+          width: width,
+          height: height,
+          mime: "image/jpeg",
+          blob: blob,
+          thumb: thumb
+        });
+        photoOk += 1;
+      } catch (e) {
+        photoFail += 1;
+      }
+    }
     closePanels();
     render();
-    toast("已匯入 " + valid.length + " 筆" + (skipped ? "，略過 " + skipped + " 筆格式不符" : ""));
+    var msg = "已匯入 " + valid.length + " 筆紀錄";
+    if (photoOk) msg += "、" + photoOk + " 張照片";
+    if (skipped) msg += "，略過 " + skipped + " 筆格式不符";
+    if (photoFail) msg += "，" + photoFail + " 張照片失敗";
+    toast(msg);
   }
 
-  function askImport(text) {
-    $("pendingImport").value = text;
+  async function askImport(text) {
+    pendingImportText = text;
+    var data = null;
+    try { data = JSON.parse(text); } catch (e) {
+      toast("這個檔案不是有效的 JSON");
+      return;
+    }
+    var nRec = data && Array.isArray(data.records) ? data.records.length : (Array.isArray(data) ? data.length : 0);
+    var nPhoto = data && Array.isArray(data.photos) ? data.photos.length : 0;
+    var existingPhotos = 0;
+    try { existingPhotos = (await allPhotos()).length; } catch (e) {}
+    var textMsg = "這個備份有 " + nRec + " 筆紀錄" + (nPhoto ? "和 " + nPhoto + " 張照片" : "（沒有照片）") + "。要合併到現有資料，還是用這個檔案取代全部？";
+    if (nPhoto === 0 && existingPhotos && !Array.isArray(data)) {
+      textMsg += "取代全部會清除目前的照片。";
+    }
     $("confirmTitle").textContent = "匯入備份";
-    $("confirmText").textContent = "要合併到現有紀錄，還是用這個檔案取代全部？合併時，相同編號的紀錄會被更新。";
+    $("confirmText").textContent = textMsg;
     $("confirmOk").textContent = "合併";
     $("confirmOk").className = "btn primary";
     $("confirmAlt").style.display = "block";
     $("confirmDialog").dataset.mode = "import";
     $("confirmDialog").classList.add("show");
+    $("overlay").classList.add("front");
     showOverlay(true);
   }
 
@@ -1268,23 +1998,29 @@ textarea { min-height: 88px; resize: vertical; }
     }
     loadRecords();
     render();
+    openDB().catch(function () {});
 
     $("addBtn").addEventListener("click", function () { openForm(null); });
     $("backupBtn").addEventListener("click", function () {
       $("copyBox").classList.remove("show");
       openPanelNamed("backup");
     });
+    $("albumBtn").addEventListener("click", function () {
+      openPanelNamed("album");
+      renderAlbum();
+    });
     $("themeBtn").addEventListener("click", function () {
       applyTheme(isDarkNow() ? "light" : "dark");
     });
     $("overlay").addEventListener("click", function () {
-      $("confirmDialog").classList.remove("show");
+      $("confirmDialog").classList.remove("show"); $("overlay").classList.remove("front");
       closePanels();
     });
     $("formCancel").addEventListener("click", function () { closePanels(); });
     $("backupClose").addEventListener("click", function () { closePanels(); });
+    $("albumClose").addEventListener("click", function () { closePanels(); });
     $("recordForm").addEventListener("submit", function (e) { e.preventDefault(); saveForm(); });
-    $("formDelete").addEventListener("click", askDelete);
+    $("formDelete").addEventListener("click", function () { askDelete(); });
 
     $("filters").addEventListener("click", function (e) {
       var btn = e.target.closest("[data-filter]");
@@ -1294,18 +2030,28 @@ textarea { min-height: 88px; resize: vertical; }
     });
 
     $("list").addEventListener("click", function (e) {
-      var btn = e.target.closest(".card");
-      if (!btn) return;
-      var rec = records.find(function (r) { return r.id === btn.getAttribute("data-id"); });
+      var thumb = e.target.closest("[data-photo]");
+      if (thumb) {
+        e.preventDefault();
+        var recId = thumb.getAttribute("data-record");
+        photosForRecord(recId).then(function (list) {
+          var ids = list.map(function (p) { return p.id; });
+          openViewer(ids, ids.indexOf(thumb.getAttribute("data-photo")));
+        });
+        return;
+      }
+      var edit = e.target.closest("[data-edit]");
+      if (!edit) return;
+      var rec = records.find(function (r) { return r.id === edit.getAttribute("data-edit"); });
       if (rec) openForm(rec);
     });
 
-    document.getElementById("formPeriod").addEventListener("click", function (e) {
+    $("formPeriod").addEventListener("click", function (e) {
       var btn = e.target.closest("[data-seg=period]");
       if (!btn) return;
       setSeg("period", btn.getAttribute("data-value"));
     });
-    document.getElementById("formBoard").addEventListener("click", function (e) {
+    $("formBoard").addEventListener("click", function (e) {
       var btn = e.target.closest("[data-seg=board]");
       if (!btn) return;
       setSeg("board", btn.getAttribute("data-value"));
@@ -1321,9 +2067,60 @@ textarea { min-height: 88px; resize: vertical; }
       renderResortChips($("formResort").value.trim());
     });
 
-    $("exportJson").addEventListener("click", function () {
-      shareOrDownload("ski-log-" + filenameStamp() + ".json", JSON.stringify(exportPayload(), null, 2), "application/json");
+    $("addPhotosBtn").addEventListener("click", function () { $("photoInput").click(); });
+    $("photoInput").addEventListener("change", function (e) {
+      var files = e.target.files;
+      e.target.value = "";
+      addFiles(files);
     });
+    $("formPhotos").addEventListener("click", function (e) {
+      var del = e.target.closest("[data-del-photo]");
+      if (del) {
+        askDeletePhoto(del.getAttribute("data-del-photo"));
+        return;
+      }
+      var open = e.target.closest("[data-photo]");
+      if (open) {
+        photosForRecord(formRecordId).then(function (list) {
+          var ids = list.map(function (p) { return p.id; });
+          openViewer(ids, ids.indexOf(open.getAttribute("data-photo")));
+        });
+      }
+    });
+
+    $("albumBody").addEventListener("click", function (e) {
+      var thumb = e.target.closest("[data-photo]");
+      if (!thumb) return;
+      var recId = thumb.getAttribute("data-record");
+      photosForRecord(recId).then(function (list) {
+        var ids = list.map(function (p) { return p.id; });
+        openViewer(ids, ids.indexOf(thumb.getAttribute("data-photo")));
+      });
+    });
+
+    $("viewerClose").addEventListener("click", function () { closeViewer(); });
+    $("viewerPrev").addEventListener("click", function () { viewerStep(-1); });
+    $("viewerNext").addEventListener("click", function () { viewerStep(1); });
+    $("viewerDelete").addEventListener("click", function () {
+      if (viewerList[viewerIndex]) askDeletePhoto(viewerList[viewerIndex]);
+    });
+    $("viewerStage").addEventListener("touchstart", function (e) {
+      if (e.changedTouches && e.changedTouches[0]) viewerTouchX = e.changedTouches[0].clientX;
+    }, { passive: true });
+    $("viewerStage").addEventListener("touchend", function (e) {
+      if (!e.changedTouches || !e.changedTouches[0]) return;
+      var dx = e.changedTouches[0].clientX - viewerTouchX;
+      if (dx > 50) viewerStep(-1);
+      else if (dx < -50) viewerStep(1);
+    }, { passive: true });
+    document.addEventListener("keydown", function (e) {
+      if (!viewerOpen) return;
+      if (e.key === "Escape") closeViewer();
+      if (e.key === "ArrowLeft") viewerStep(-1);
+      if (e.key === "ArrowRight") viewerStep(1);
+    });
+
+    $("exportJson").addEventListener("click", function () { exportFullBackup(); });
     $("exportCsv").addEventListener("click", function () {
       shareOrDownload("ski-log-" + filenameStamp() + ".csv", toCSV(records), "text/csv;charset=utf-8");
     });
@@ -1332,6 +2129,7 @@ textarea { min-height: 88px; resize: vertical; }
       var file = e.target.files && e.target.files[0];
       e.target.value = "";
       if (!file) return;
+      toast("正在讀取備份…");
       var reader = new FileReader();
       reader.onload = function () { askImport(String(reader.result || "")); };
       reader.onerror = function () { toast("讀取檔案失敗"); };
@@ -1345,27 +2143,34 @@ textarea { min-height: 88px; resize: vertical; }
     });
 
     $("confirmCancel").addEventListener("click", function () {
-      $("confirmDialog").classList.remove("show");
-      if (openPanel) showOverlay(true);
+      $("confirmDialog").classList.remove("show"); $("overlay").classList.remove("front");
+      pendingPhotoId = null;
+      if (viewerOpen) { /* keep viewer */ }
+      else if (openPanel) showOverlay(true);
       else closePanels();
       $("confirmAlt").style.display = "none";
     });
     $("confirmOk").addEventListener("click", function () {
       var mode = $("confirmDialog").dataset.mode;
       $("confirmAlt").style.display = "none";
-      $("confirmDialog").classList.remove("show");
+      $("confirmDialog").classList.remove("show"); $("overlay").classList.remove("front");
       if (mode === "delete") doDelete();
-      else if (mode === "import") importJSONText($("pendingImport").value, "merge");
+      else if (mode === "delete-photo") doDeletePhoto();
+      else if (mode === "import") importJSONText(pendingImportText, "merge");
     });
     $("confirmAlt").addEventListener("click", function () {
       $("confirmAlt").style.display = "none";
-      $("confirmDialog").classList.remove("show");
-      importJSONText($("pendingImport").value, "replace");
+      $("confirmDialog").classList.remove("show"); $("overlay").classList.remove("front");
+      importJSONText(pendingImportText, "replace");
     });
 
     window.addEventListener("popstate", function () {
-      $("confirmDialog").classList.remove("show");
+      $("confirmDialog").classList.remove("show"); $("overlay").classList.remove("front");
       $("confirmAlt").style.display = "none";
+      if (viewerOpen) {
+        closeViewer(true);
+        return;
+      }
       if (openPanel) closePanels(true);
     });
   }
