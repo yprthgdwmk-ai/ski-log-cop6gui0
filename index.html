@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="card-info-lower">
+<html lang="zh-Hant" data-app-version="card-ref-colors">
 <head>
-  <!-- card-info-lower -->
+  <!-- card-ref-colors -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1451,6 +1451,37 @@ textarea { min-height: 88px; resize: vertical; }
     /* card-info-lower: drop 雪場 and name one line below the price */
     .card-details .price {
       margin-bottom: calc(1em - 6px);
+    }
+
+    /* card-ref-colors: date navy and unified pale-teal chips sampled from reference */
+    .date-strip .d-day,
+    .date-strip .d-week {
+      color: #181f2a;
+      font-weight: 800;
+    }
+    .date-strip .card-chips .badge,
+    .date-strip .card-chips .badge-full,
+    .date-strip .card-chips .badge-half,
+    .date-strip .card-chips .badge-snowboard,
+    .date-strip .card-chips .badge-ski {
+      color: #346a76;
+      background: #e7f2f4;
+      border-color: rgba(52, 106, 118, 0.12);
+      box-shadow: none;
+      font-weight: 800;
+    }
+    .date-strip .chip-label {
+      font-weight: 800;
+    }
+    :root[data-theme="dark"] .date-strip .d-day,
+    :root[data-theme="dark"] .date-strip .d-week {
+      color: #e8edf2;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .date-strip .d-day,
+      :root:not([data-theme="light"]) .date-strip .d-week {
+        color: #e8edf2;
+      }
     }
 </style>
 </head>
