@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="card-ref-colors">
+<html lang="zh-Hant" data-app-version="card-date-chip-style">
 <head>
-  <!-- card-ref-colors -->
+  <!-- card-date-chip-style -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1481,6 +1481,32 @@ textarea { min-height: 88px; resize: vertical; }
       :root:not([data-theme="light"]) .date-strip .d-day,
       :root:not([data-theme="light"]) .date-strip .d-week {
         color: #e8edf2;
+      }
+    }
+
+    /* card-date-chip-style: day and weekday as individual pale-teal pills, like the chips */
+    .date-strip .d-day,
+    .date-strip .d-week {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 4px 2px;
+      border-radius: 9px;
+      color: #346a76;
+      background: #e7f2f4;
+      border: 1px solid rgba(52, 106, 118, 0.12);
+      font-weight: 800;
+    }
+    :root[data-theme="dark"] .date-strip .d-day,
+    :root[data-theme="dark"] .date-strip .d-week {
+      color: #346a76;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .date-strip .d-day,
+      :root:not([data-theme="light"]) .date-strip .d-week {
+        color: #346a76;
       }
     }
 </style>
