@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="2-card-chips-in-date">
+<html lang="zh-Hant" data-app-version="2-card-baseline">
 <head>
-  <!-- ski-log-v2-card-chips-in-date -->
+  <!-- ski-log-v2-card-baseline -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1091,7 +1091,7 @@ textarea { min-height: 88px; resize: vertical; }
 }
 .card-details .price { margin: 0 0 4px; }
   
-    /* ski-log-v2-card-chips-in-date: spread date, details, and chips across full card height */
+    /* ski-log-v2-card-baseline: spread date, details, and chips across full card height */
     .card-main {
       align-items: stretch;
       min-height: 144px;
@@ -1142,7 +1142,7 @@ textarea { min-height: 88px; resize: vertical; }
       min-height: 0;
     }
 
-    /* ski-log-v2-card-chips-in-date: drop month; let date+info fill space; chips hug photo */
+    /* ski-log-v2-card-baseline: drop month; let date+info fill space; chips hug photo */
     .date-strip .d-month { display: none; }
     .card-main {
       gap: 6px;
@@ -1198,7 +1198,7 @@ textarea { min-height: 88px; resize: vertical; }
       .date-strip .d-day { font-size: 18px; }
     }
 
-    /* ski-log-v2-card-chips-in-date: same type for day and weekday, larger, grouped tight */
+    /* ski-log-v2-card-baseline: same type for day and weekday, larger, grouped tight */
     .date-strip {
       justify-content: center;
       gap: 1px;
@@ -1225,7 +1225,7 @@ textarea { min-height: 88px; resize: vertical; }
       .date-strip .d-week { font-size: 19px; }
     }
 
-    /* ski-log-v2-card-chips-in-date: taller elongated chips, top/bottom split, slightly inset */
+    /* ski-log-v2-card-baseline: taller elongated chips, top/bottom split, slightly inset */
     .card-chips {
       justify-content: space-between;
       padding: 14% 0;
@@ -1248,7 +1248,7 @@ textarea { min-height: 88px; resize: vertical; }
       letter-spacing: 0.02em;
     }
 
-    /* ski-log-v2-card-chips-in-date: chips under date in the left strip; price column fills right */
+    /* ski-log-v2-card-baseline: chips under date in the left strip; price column fills right */
     .card-main {
       gap: 0;
     }
@@ -1320,6 +1320,48 @@ textarea { min-height: 88px; resize: vertical; }
         min-height: 28px;
         font-size: 14px;
       }
+    }
+
+    /* ski-log-v2-card-baseline: wider date+price columns; name, last chip, and photo share one bottom line */
+    .date-strip {
+      width: 64px;
+      padding: 6px 5px 0;
+    }
+    .card-info {
+      gap: 8px;
+    }
+    .card--with-photo .card-main {
+      padding-right: 6px;
+    }
+    .card--with-photo .card-cover {
+      width: 108px;
+      height: auto;
+      min-height: 108px;
+      align-self: stretch;
+      margin: 12px 10px 12px 0;
+    }
+    @media (max-width: 389px) {
+      .card--with-photo .card-cover {
+        width: 100px;
+        min-height: 104px;
+      }
+    }
+    @media (min-width: 414px) {
+      .date-strip { width: 68px; }
+      .card--with-photo .card-cover {
+        width: 116px;
+        min-height: 112px;
+      }
+    }
+    .card-details {
+      justify-content: flex-start;
+    }
+    .card-details .guest-line {
+      order: 5;
+      margin-top: auto;
+      margin-bottom: 0;
+      padding-bottom: 0;
+      line-height: 1.15;
     }
 </style>
 </head>
