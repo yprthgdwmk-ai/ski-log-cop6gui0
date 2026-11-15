@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="2-guest-photos">
+<html lang="zh-Hant" data-app-version="2-photos-ios-fix">
 <head>
-  <!-- ski-log-v2-guest-photos -->
+  <!-- ski-log-v2-photos-ios-fix -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -673,6 +673,11 @@ textarea { min-height: 88px; resize: vertical; }
 .photo-cell .photo-open { width:100%; height:100%; padding:0; display:block; color:inherit; }
 .overlay.front { z-index: 100; }
 .dialog { z-index: 110; }
+  
+.photo-cell.pending { opacity: 0.7; }
+.photo-cell.pending img { width:100%; height:100%; object-fit:cover; display:block; }
+.photo-count { font-size: 12px; font-weight: 650; color: var(--muted); padding: 0 16px 8px; }
+.photo-count:empty { display: none; }
   </style>
 </head>
 <body>
@@ -756,7 +761,7 @@ textarea { min-height: 88px; resize: vertical; }
       <div class="field" id="feature-guest-photos">
         <label>照片（選填）</label>
         <div class="photo-grid" id="formPhotos"></div>
-        <p class="photo-hint">照片只存在這支手機，不會上傳到網路。換手機前請先匯出備份。</p>
+        <p class="photo-hint" id="photoStorageHint">照片只存在這支手機，不會上傳到網路。換手機前請先匯出備份。</p>
         <p class="photo-progress" id="photoProgress"></p>
         <div id="photoCount" class="photo-hint"></div>
         <button type="button" class="btn ghost" id="addPhotosBtn" style="margin-top:8px">加入照片</button>
@@ -829,6 +834,7 @@ textarea { min-height: 88px; resize: vertical; }
   <div class="toast" id="toast" role="status"></div>
 
   <script>
+
 (function () {
   "use strict";
 
@@ -853,6 +859,8 @@ textarea { min-height: 88px; resize: vertical; }
   var photoCache = null;
   var urlCache = {};
   var pendingImportText = "";
+  var pendingPreviews = [];
+  var photoStorageReady = null;
   var pendingPhotoId = null;
   var viewerList = [];
   var viewerIndex = 0;
@@ -1042,12 +1050,25 @@ textarea { min-height: 88px; resize: vertical; }
   }
 
   async function putPhoto(photo) {
+    var stored = {
+      id: photo.id,
+      recordId: photo.recordId,
+      createdAt: photo.createdAt || Date.now(),
+      width: photo.width || 0,
+      height: photo.height || 0,
+      mime: photo.mime || "image/jpeg",
+      dataUrl: photo.dataUrl,
+      thumbUrl: photo.thumbUrl || photo.dataUrl
+    };
+    if (!stored.dataUrl || String(stored.dataUrl).indexOf("data:") !== 0) {
+      throw new Error("missing dataUrl");
+    }
     var db = await openDB();
     await new Promise(function (resolve, reject) {
       var tx = db.transaction("photos", "readwrite");
       tx.oncomplete = function () { resolve(); };
       tx.onerror = function () { reject(tx.error); };
-      tx.objectStore("photos").put(photo);
+      tx.objectStore("photos").put(stored);
     });
     invalidatePhotos();
   }
@@ -1095,11 +1116,21 @@ textarea { min-height: 88px; resize: vertical; }
   }
 
   function photoURL(photo, useThumb) {
-    var key = photo.id + (useThumb && photo.thumb ? "-t" : "-f");
-    if (urlCache[key]) return urlCache[key];
+    if (!photo) return "";
+    if (useThumb && photo.thumbUrl) return photo.thumbUrl;
+    if (photo.dataUrl) return photo.dataUrl;
+    if (useThumb && typeof photo.thumb === "string" && photo.thumb.indexOf("data:") === 0) return photo.thumb;
+    if (typeof photo.blob === "string" && photo.blob.indexOf("data:") === 0) return photo.blob;
     var blob = useThumb && photo.thumb ? photo.thumb : photo.blob;
-    urlCache[key] = URL.createObjectURL(blob);
-    return urlCache[key];
+    if (!blob || typeof Blob === "undefined" || !(blob instanceof Blob)) return "";
+    var key = photo.id + (useThumb ? "-t" : "-f");
+    if (urlCache[key]) return urlCache[key];
+    try {
+      urlCache[key] = URL.createObjectURL(blob);
+      return urlCache[key];
+    } catch (e) {
+      return "";
+    }
   }
 
   function revokePhotoUrl(id) {
@@ -1112,33 +1143,87 @@ textarea { min-height: 88px; resize: vertical; }
     });
   }
 
-  function canvasToBlob(canvas, type, quality) {
+  function canvasToDataURL(canvas, type, quality) {
     return new Promise(function (resolve, reject) {
-      canvas.toBlob(function (blob) {
-        if (blob) resolve(blob);
-        else reject(new Error("toBlob failed"));
-      }, type, quality);
+      var settled = false;
+      var finish = function (url, err) {
+        if (settled) return;
+        settled = true;
+        if (url && String(url).indexOf("data:") === 0) resolve(url);
+        else reject(err || new Error("toDataURL failed"));
+      };
+      var fallback = function () {
+        try {
+          var url = canvas.toDataURL(type || "image/jpeg", quality);
+          if (url && url.indexOf("data:") === 0 && url.length > 32) { finish(url); return; }
+        } catch (e) {}
+        try {
+          finish(canvas.toDataURL("image/png"));
+        } catch (e2) {
+          finish(null, e2);
+        }
+      };
+      if (typeof canvas.toBlob !== "function") { fallback(); return; }
+      var timer = setTimeout(fallback, 1500);
+      try {
+        canvas.toBlob(function (blob) {
+          clearTimeout(timer);
+          if (settled) return;
+          if (!blob) { fallback(); return; }
+          var reader = new FileReader();
+          reader.onload = function () { finish(String(reader.result || "")); };
+          reader.onerror = function () { fallback(); };
+          reader.readAsDataURL(blob);
+        }, type || "image/jpeg", quality);
+      } catch (e) {
+        clearTimeout(timer);
+        fallback();
+      }
+    });
+  }
+
+  function readFileAsDataURL(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        var s = String(reader.result || "");
+        if (s.indexOf("data:") === 0) resolve(s);
+        else reject(new Error("not-data-url"));
+      };
+      reader.onerror = function () { reject(reader.error || new Error("read fail")); };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function loadImageFromDataURL(dataUrl) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      img.onload = function () {
+        var w = img.naturalWidth || img.width;
+        var h = img.naturalHeight || img.height;
+        if (!w || !h) reject(new Error("empty image"));
+        else resolve(img);
+      };
+      img.onerror = function () { reject(new Error("image load failed")); };
+      img.src = dataUrl;
     });
   }
 
   function loadImageFromFile(file) {
-    if (typeof createImageBitmap === "function") {
-      return createImageBitmap(file, { imageOrientation: "from-image" }).catch(function () {
-        return createImageBitmap(file);
-      });
-    }
-    return new Promise(function (resolve, reject) {
-      var url = URL.createObjectURL(file);
-      var img = new Image();
-      img.onload = function () {
-        URL.revokeObjectURL(url);
-        resolve(img);
-      };
-      img.onerror = function () {
-        URL.revokeObjectURL(url);
-        reject(new Error("image load failed"));
-      };
-      img.src = url;
+    var asDataUrl = (typeof file === "string" && file.indexOf("data:") === 0)
+      ? Promise.resolve(file)
+      : null;
+    return Promise.resolve().then(function () {
+      if (asDataUrl) return asDataUrl.then(loadImageFromDataURL);
+      if (typeof createImageBitmap === "function") {
+        return createImageBitmap(file, { imageOrientation: "from-image" }).catch(function () {
+          return createImageBitmap(file);
+        });
+      }
+      return Promise.reject(new Error("no-bitmap"));
+    }).catch(function () {
+      if (asDataUrl) return asDataUrl.then(loadImageFromDataURL);
+      return readFileAsDataURL(file).then(loadImageFromDataURL);
     });
   }
 
@@ -1165,9 +1250,74 @@ textarea { min-height: 88px; resize: vertical; }
     var full = drawScaled(source, MAX_EDGE);
     var thumb = drawScaled(source, THUMB_EDGE);
     if (source.close) try { source.close(); } catch (e) {}
-    var blob = await canvasToBlob(full.canvas, "image/jpeg", JPEG_QUALITY);
-    var thumbBlob = await canvasToBlob(thumb.canvas, "image/jpeg", 0.7);
-    return { blob: blob, thumb: thumbBlob, width: full.width, height: full.height };
+    var dataUrl = await canvasToDataURL(full.canvas, "image/jpeg", JPEG_QUALITY);
+    var thumbUrl = await canvasToDataURL(thumb.canvas, "image/jpeg", 0.7);
+    return { dataUrl: dataUrl, thumbUrl: thumbUrl, width: full.width, height: full.height, mime: "image/jpeg" };
+  }
+
+  async function storeableFromFile(file) {
+    try {
+      return await compressImage(file);
+    } catch (err) {
+      var dataUrl = await readFileAsDataURL(file);
+      return {
+        dataUrl: dataUrl,
+        thumbUrl: dataUrl,
+        width: 0,
+        height: 0,
+        mime: file.type || "image/jpeg",
+        raw: true
+      };
+    }
+  }
+
+  async function testPhotoStorage() {
+    try {
+      if (!window.indexedDB) return false;
+      var db = await openDB();
+      var id = "__ski_log_idb_test__";
+      var sample = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+      await new Promise(function (resolve, reject) {
+        var tx = db.transaction("photos", "readwrite");
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error); };
+        tx.objectStore("photos").put({
+          id: id, recordId: id, createdAt: 0, width: 1, height: 1,
+          mime: "image/gif", dataUrl: sample, thumbUrl: sample
+        });
+      });
+      var read = await new Promise(function (resolve, reject) {
+        var tx = db.transaction("photos", "readonly");
+        var req = tx.objectStore("photos").get(id);
+        req.onsuccess = function () { resolve(req.result); };
+        req.onerror = function () { reject(req.error); };
+      });
+      await new Promise(function (resolve, reject) {
+        var tx = db.transaction("photos", "readwrite");
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error); };
+        tx.objectStore("photos").delete(id);
+      });
+      invalidatePhotos();
+      return !!(read && typeof read.dataUrl === "string" && read.dataUrl.indexOf("data:") === 0);
+    } catch (e) {
+      invalidatePhotos();
+      return false;
+    }
+  }
+
+  function ensurePhotoStorage() {
+    if (!photoStorageReady) photoStorageReady = testPhotoStorage();
+    return photoStorageReady;
+  }
+
+  function updatePhotoStorageHint(ok) {
+    var el = $("photoStorageHint");
+    if (!el) return;
+    el.textContent = ok
+      ? "照片只存在這支手機，不會上傳到網路。換手機前請先匯出備份。"
+      : "這支瀏覽器目前無法儲存照片。請用 Safari 開啟本頁（不要用無痕模式），再試一次。";
+    el.style.color = ok ? "" : "var(--danger)";
   }
 
   function blobToBase64(blob) {
@@ -1418,6 +1568,7 @@ textarea { min-height: 88px; resize: vertical; }
               '<div class="meta"><span class="badges"><span class="badge">' + periodLabel(r.period) + "</span><span class=\"badge\">" + boardLabel(r.board) + "</span></span> · " + esc(r.resort) + "</div>" +
               guest + note +
             "</button>" +
+            '<div class="photo-count" data-photo-count-for="' + esc(r.id) + '"></div>' +
             '<div class="thumbs" data-thumbs-for="' + esc(r.id) + '"></div>' +
           "</article>"
         );
@@ -1437,9 +1588,16 @@ textarea { min-height: 88px; resize: vertical; }
     document.querySelectorAll("[data-thumbs-for]").forEach(function (el) {
       var recId = el.getAttribute("data-thumbs-for");
       var list = (byRec[recId] || []).slice().sort(function (a, b) { return (a.createdAt || 0) - (b.createdAt || 0); });
+      var countEl = document.querySelector('[data-photo-count-for="' + recId + '"]');
+      if (countEl) {
+        countEl.textContent = list.length ? (list.length + " 張照片") : "";
+        countEl.style.display = list.length ? "block" : "none";
+      }
       if (!list.length) { el.innerHTML = ""; return; }
       el.innerHTML = list.map(function (p) {
-        return '<button type="button" class="thumb" data-photo="' + esc(p.id) + '" data-record="' + esc(recId) + '" aria-label="查看照片"><img alt="" src="' + photoURL(p, true) + '"></button>';
+        var src = photoURL(p, true);
+        if (!src) return "";
+        return '<button type="button" class="thumb" data-photo="' + esc(p.id) + '" data-record="' + esc(recId) + '" aria-label="查看照片"><img alt="" src="' + src + '"></button>';
       }).join("");
     });
   }
@@ -1484,13 +1642,27 @@ textarea { min-height: 88px; resize: vertical; }
     if (!box || !formRecordId) return;
     var list;
     try { list = await photosForRecord(formRecordId); } catch (e) { list = []; }
-    box.innerHTML = list.map(function (p) {
+    var html = list.map(function (p) {
+      var src = photoURL(p, true);
       return '<div class="photo-cell">' +
-        '<button type="button" class="photo-open" data-photo="' + esc(p.id) + '" aria-label="查看照片"><img alt="" src="' + photoURL(p, true) + '"></button>' +
+        '<button type="button" class="photo-open" data-photo="' + esc(p.id) + '" aria-label="查看照片">' +
+          (src ? '<img alt="" src="' + src + '">' : "") + "</button>" +
         '<button type="button" class="del" data-del-photo="' + esc(p.id) + '" aria-label="刪除這張照片">×</button>' +
         "</div>";
     }).join("");
-    $("photoCount").textContent = list.length ? ("已有 " + list.length + " 張") : "";
+    html += pendingPreviews.map(function (p) {
+      return '<div class="photo-cell pending">' +
+        '<img alt="處理中" src="' + p.dataUrl + '">' +
+        "</div>";
+    }).join("");
+    box.innerHTML = html;
+    var total = list.length + pendingPreviews.length;
+    var count = $("photoCount");
+    if (count) {
+      if (!total) count.textContent = "尚未加入照片";
+      else if (pendingPreviews.length) count.textContent = "已有 " + list.length + " 張，正在處理 " + pendingPreviews.length + " 張";
+      else count.textContent = "已有 " + list.length + " 張照片";
+    }
   }
 
   function setSeg(name, value) {
@@ -1515,11 +1687,13 @@ textarea { min-height: 88px; resize: vertical; }
   }
 
   function openForm(rec) {
+    if (openPanel) closePanels(true);
     clearFieldErrors();
     formSaved = false;
     formIsNew = !rec;
     formRecordId = rec ? rec.id : uid();
     editingId = rec ? rec.id : null;
+    pendingPreviews = [];
     $("formTitle").textContent = rec ? "編輯紀錄" : "新增紀錄";
     $("formDate").value = rec ? rec.date : todayISO();
     setSeg("period", rec ? rec.period : "full");
@@ -1533,6 +1707,7 @@ textarea { min-height: 88px; resize: vertical; }
     renderResortChips(rec ? rec.resort : "");
     $("copyBox").classList.remove("show");
     renderFormPhotos();
+    ensurePhotoStorage().then(updatePhotoStorageHint);
     openPanelNamed("form");
     setTimeout(function () { $("formDate").blur(); }, 0);
   }
@@ -1588,9 +1763,12 @@ textarea { min-height: 88px; resize: vertical; }
     }
     if (!persist()) return;
     formSaved = true;
+    var savedId = formRecordId;
     closePanels();
+    invalidatePhotos();
     render();
     toast(editingId ? "已更新" : "已記下一筆");
+    setTimeout(function () { hydrateThumbs(); }, 0);
   }
 
   async function askDelete() {
@@ -1667,50 +1845,70 @@ textarea { min-height: 88px; resize: vertical; }
     toast("已刪除照片");
   }
 
-  async function addFiles(fileList) {
-    var files = Array.prototype.slice.call(fileList || []).filter(function (f) {
-      return f && (f.type.indexOf("image/") === 0 || !f.type);
+  async function addFiles(files) {
+    files = (files || []).filter(function (f) {
+      return f && (!f.type || f.type.indexOf("image/") === 0 || /\.(heic|heif|jpe?g|png|gif|webp|tif)$/i.test(f.name || ""));
     });
-    if (!files.length) return;
-    var existing;
-    try { existing = await photosForRecord(formRecordId); } catch (e) {
-      toast("這支瀏覽器無法儲存照片");
+    if (!files.length) {
+      alert("沒有讀到照片。請再試一次，或改從「照片」相簿選取。");
       return;
     }
-    var room = MAX_PHOTOS_PER_RECORD - existing.length;
+    var storageOk = await ensurePhotoStorage();
+    if (!storageOk) {
+      updatePhotoStorageHint(false);
+      alert("這支瀏覽器目前無法儲存照片。請用 Safari 開啟這個網頁（不要用無痕模式），加入主畫面後再試一次。");
+      return;
+    }
+    var existing;
+    try { existing = await photosForRecord(formRecordId); } catch (e) {
+      updatePhotoStorageHint(false);
+      alert("無法存取照片儲存空間，所以照片沒有被存下來。請用 Safari 開啟後再試。");
+      return;
+    }
+    var room = MAX_PHOTOS_PER_RECORD - existing.length - pendingPreviews.length;
     if (room <= 0) {
-      toast("每筆最多 " + MAX_PHOTOS_PER_RECORD + " 張照片");
+      alert("每筆最多 " + MAX_PHOTOS_PER_RECORD + " 張照片。");
       return;
     }
     if (files.length > room) {
       files = files.slice(0, room);
-      toast("已達上限，只加入前 " + room + " 張");
+      alert("已達上限，只會加入前 " + room + " 張。");
     }
-    var ok = 0, fail = 0;
+    var ok = 0, fail = 0, failNames = [];
     for (var i = 0; i < files.length; i++) {
+      var file = files[i];
+      var tempId = "pending-" + uid();
       $("photoProgress").textContent = "正在處理照片 " + (i + 1) + "／" + files.length + "…";
       try {
-        var result = await compressImage(files[i]);
+        var previewUrl = await readFileAsDataURL(file);
+        pendingPreviews.push({ id: tempId, dataUrl: previewUrl });
+        renderFormPhotos();
+        var result = await storeableFromFile(file);
+        var photoId = uid();
         await putPhoto({
-          id: uid(),
+          id: photoId,
           recordId: formRecordId,
           createdAt: Date.now() + i,
           width: result.width,
           height: result.height,
-          mime: "image/jpeg",
-          blob: result.blob,
-          thumb: result.thumb
+          mime: result.mime || "image/jpeg",
+          dataUrl: result.dataUrl,
+          thumbUrl: result.thumbUrl || result.dataUrl
         });
+        pendingPreviews = pendingPreviews.filter(function (p) { return p.id !== tempId; });
         ok += 1;
         renderFormPhotos();
       } catch (e) {
+        pendingPreviews = pendingPreviews.filter(function (p) { return p.id !== tempId; });
         fail += 1;
+        failNames.push(file.name || ("第 " + (i + 1) + " 張"));
+        renderFormPhotos();
       }
     }
     $("photoProgress").textContent = "";
     if (ok && !fail) toast("已加入 " + ok + " 張照片");
-    else if (ok && fail) toast("已加入 " + ok + " 張，" + fail + " 張無法處理");
-    else toast("照片無法處理。若是 iPhone 的 HEIC，請再試一次或改用 JPG。");
+    else if (ok && fail) alert("已加入 " + ok + " 張照片，但有 " + fail + " 張失敗：" + failNames.join("、") + "。請再試一次，或改用 JPG。");
+    else alert("照片無法顯示或儲存。" + (failNames.length ? "（" + failNames.join("、") + "）" : "") + "請再試一次。若還是不行，請在相簿先存成 JPG。");
   }
 
   function recordById(id) {
@@ -1807,6 +2005,17 @@ textarea { min-height: 88px; resize: vertical; }
     }).join("");
   }
 
+  async function photoToBase64(p) {
+    var url = p.dataUrl || (typeof p.blob === "string" ? p.blob : "");
+    if (url && url.indexOf("data:") === 0) {
+      var i = url.indexOf(",");
+      return i >= 0 ? url.slice(i + 1) : url;
+    }
+    var blob = p.blob;
+    if (blob && typeof Blob !== "undefined" && blob instanceof Blob) return blobToBase64(blob);
+    throw new Error("no photo data");
+  }
+
   async function exportFullBackup() {
     toast("正在準備備份…");
     var photos = [];
@@ -1821,7 +2030,7 @@ textarea { min-height: 88px; resize: vertical; }
         width: p.width,
         height: p.height,
         mime: p.mime || "image/jpeg",
-        data: await blobToBase64(p.blob)
+        data: await photoToBase64(p)
       });
     }
     var payload = {
@@ -1931,13 +2140,16 @@ textarea { min-height: 88px; resize: vertical; }
       var p = incomingPhotos[i];
       try {
         if (!p || !p.data || !p.recordId) { photoFail += 1; continue; }
-        var blob = base64ToBlob(p.data, p.mime || "image/jpeg");
-        var thumb = blob;
+        var dataUrl = String(p.data).indexOf("data:") === 0 ? String(p.data) : ("data:" + (p.mime || "image/jpeg") + ";base64," + p.data);
+        var thumbUrl = dataUrl;
         var width = p.width || 0;
         var height = p.height || 0;
+        var mime = p.mime || "image/jpeg";
         try {
-          var result = await compressImage(blob);
-          thumb = result.thumb;
+          var result = await compressImage(dataUrl);
+          thumbUrl = result.thumbUrl || dataUrl;
+          dataUrl = result.dataUrl || dataUrl;
+          mime = result.mime || mime;
           if (!width) width = result.width;
           if (!height) height = result.height;
         } catch (e) {}
@@ -1947,9 +2159,9 @@ textarea { min-height: 88px; resize: vertical; }
           createdAt: p.createdAt || Date.now(),
           width: width,
           height: height,
-          mime: "image/jpeg",
-          blob: blob,
-          thumb: thumb
+          mime: mime,
+          dataUrl: dataUrl,
+          thumbUrl: thumbUrl
         });
         photoOk += 1;
       } catch (e) {
@@ -1998,7 +2210,10 @@ textarea { min-height: 88px; resize: vertical; }
     }
     loadRecords();
     render();
-    openDB().catch(function () {});
+    ensurePhotoStorage().then(function (ok) {
+      updatePhotoStorageHint(ok);
+      if (!ok) toast("目前無法儲存照片，請用 Safari 開啟");
+    }).catch(function () { updatePhotoStorageHint(false); });
 
     $("addBtn").addEventListener("click", function () { openForm(null); });
     $("backupBtn").addEventListener("click", function () {
@@ -2069,7 +2284,11 @@ textarea { min-height: 88px; resize: vertical; }
 
     $("addPhotosBtn").addEventListener("click", function () { $("photoInput").click(); });
     $("photoInput").addEventListener("change", function (e) {
-      var files = e.target.files;
+      var list = e.target.files;
+      var files = [];
+      if (list && list.length) {
+        for (var i = 0; i < list.length; i++) files.push(list[i]);
+      }
       e.target.value = "";
       addFiles(files);
     });
@@ -2190,6 +2409,7 @@ textarea { min-height: 88px; resize: vertical; }
   else onReady();
 })();
 
+  
   </script>
 </body>
 </html>
