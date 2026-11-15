@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="2-photos-ios-fix">
+<html lang="zh-Hant" data-app-version="2-card-photo-right">
 <head>
-  <!-- ski-log-v2-photos-ios-fix -->
+  <!-- ski-log-v2-card-photo-right -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -678,6 +678,69 @@ textarea { min-height: 88px; resize: vertical; }
 .photo-cell.pending img { width:100%; height:100%; object-fit:cover; display:block; }
 .photo-count { font-size: 12px; font-weight: 650; color: var(--muted); padding: 0 16px 8px; }
 .photo-count:empty { display: none; }
+  
+.card-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.card-cover { display: none; }
+.card--with-photo .card-cover {
+  display: block;
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 12px 12px 12px 0;
+  border-radius: 16px;
+  overflow: hidden;
+  flex-shrink: 0;
+  padding: 0;
+  background: var(--surface-2);
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.card--with-photo .card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.card--with-photo .card-cover:active { opacity: 0.9; }
+.card--with-photo .card-main {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  padding: 14px 2px 14px 16px;
+}
+.card--with-photo .top {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.card--with-photo .price {
+  font-size: 20px;
+  letter-spacing: -0.03em;
+  margin-bottom: 4px;
+}
+.cover-more {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  background: rgba(15, 18, 22, 0.72);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1;
+  padding: 5px 7px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+@media (max-width: 389px) {
+  .card--with-photo .card-cover { width: 112px; height: 112px; }
+}
+@media (min-width: 414px) {
+  .card--with-photo .card-cover { width: 128px; height: 128px; }
+}
   </style>
 </head>
 <body>
@@ -1563,13 +1626,14 @@ textarea { min-height: 88px; resize: vertical; }
         var guest = r.guestName ? '<div class="guest-line">' + esc(r.guestName) + "</div>" : "";
         return (
           '<article class="card" data-id="' + esc(r.id) + '">' +
-            '<button type="button" class="card-main" data-edit="' + esc(r.id) + '" aria-label="編輯 ' + esc(formatDate(r.date)) + " " + esc(r.resort) + '">' +
-              '<div class="top"><div class="date">' + esc(formatDateShort(r.date)) + "</div><div class=\"price\">" + formatYen(r.price) + "</div></div>" +
-              '<div class="meta"><span class="badges"><span class="badge">' + periodLabel(r.period) + "</span><span class=\"badge\">" + boardLabel(r.board) + "</span></span> · " + esc(r.resort) + "</div>" +
-              guest + note +
-            "</button>" +
-            '<div class="photo-count" data-photo-count-for="' + esc(r.id) + '"></div>' +
-            '<div class="thumbs" data-thumbs-for="' + esc(r.id) + '"></div>' +
+            '<div class="card-row">' +
+              '<button type="button" class="card-main" data-edit="' + esc(r.id) + '" aria-label="編輯 ' + esc(formatDate(r.date)) + " " + esc(r.resort) + '">' +
+                '<div class="top"><div class="date">' + esc(formatDateShort(r.date)) + "</div><div class=\"price\">" + formatYen(r.price) + "</div></div>" +
+                '<div class="meta"><span class="badges"><span class="badge">' + periodLabel(r.period) + "</span><span class=\"badge\">" + boardLabel(r.board) + "</span></span> · " + esc(r.resort) + "</div>" +
+                guest + note +
+              "</button>" +
+              '<button type="button" class="card-cover" data-thumbs-for="' + esc(r.id) + '" data-record="' + esc(r.id) + '" aria-label="查看照片"></button>' +
+            "</div>" +
           "</article>"
         );
       }).join("");
@@ -1588,17 +1652,27 @@ textarea { min-height: 88px; resize: vertical; }
     document.querySelectorAll("[data-thumbs-for]").forEach(function (el) {
       var recId = el.getAttribute("data-thumbs-for");
       var list = (byRec[recId] || []).slice().sort(function (a, b) { return (a.createdAt || 0) - (b.createdAt || 0); });
-      var countEl = document.querySelector('[data-photo-count-for="' + recId + '"]');
-      if (countEl) {
-        countEl.textContent = list.length ? (list.length + " 張照片") : "";
-        countEl.style.display = list.length ? "block" : "none";
+      var card = el.closest(".card");
+      if (!list.length) {
+        el.innerHTML = "";
+        el.removeAttribute("data-photo");
+        if (card) card.classList.remove("card--with-photo");
+        return;
       }
-      if (!list.length) { el.innerHTML = ""; return; }
-      el.innerHTML = list.map(function (p) {
-        var src = photoURL(p, true);
-        if (!src) return "";
-        return '<button type="button" class="thumb" data-photo="' + esc(p.id) + '" data-record="' + esc(recId) + '" aria-label="查看照片"><img alt="" src="' + src + '"></button>';
-      }).join("");
+      var first = list[0];
+      var src = photoURL(first, true);
+      if (!src) {
+        el.innerHTML = "";
+        el.removeAttribute("data-photo");
+        if (card) card.classList.remove("card--with-photo");
+        return;
+      }
+      if (card) card.classList.add("card--with-photo");
+      el.setAttribute("data-photo", first.id);
+      el.setAttribute("data-record", recId);
+      el.setAttribute("aria-label", list.length > 1 ? ("查看照片，共 " + list.length + " 張") : "查看照片");
+      var more = list.length > 1 ? '<span class="cover-more">+' + (list.length - 1) + "</span>" : "";
+      el.innerHTML = '<img alt="" src="' + src + '">' + more;
     });
   }
 
