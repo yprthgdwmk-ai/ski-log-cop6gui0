@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="2-card-chips-tall">
+<html lang="zh-Hant" data-app-version="2-card-chips-in-date">
 <head>
-  <!-- ski-log-v2-card-chips-tall -->
+  <!-- ski-log-v2-card-chips-in-date -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1091,7 +1091,7 @@ textarea { min-height: 88px; resize: vertical; }
 }
 .card-details .price { margin: 0 0 4px; }
   
-    /* ski-log-v2-card-chips-tall: spread date, details, and chips across full card height */
+    /* ski-log-v2-card-chips-in-date: spread date, details, and chips across full card height */
     .card-main {
       align-items: stretch;
       min-height: 144px;
@@ -1142,7 +1142,7 @@ textarea { min-height: 88px; resize: vertical; }
       min-height: 0;
     }
 
-    /* ski-log-v2-card-chips-tall: drop month; let date+info fill space; chips hug photo */
+    /* ski-log-v2-card-chips-in-date: drop month; let date+info fill space; chips hug photo */
     .date-strip .d-month { display: none; }
     .card-main {
       gap: 6px;
@@ -1198,7 +1198,7 @@ textarea { min-height: 88px; resize: vertical; }
       .date-strip .d-day { font-size: 18px; }
     }
 
-    /* ski-log-v2-card-chips-tall: same type for day and weekday, larger, grouped tight */
+    /* ski-log-v2-card-chips-in-date: same type for day and weekday, larger, grouped tight */
     .date-strip {
       justify-content: center;
       gap: 1px;
@@ -1225,7 +1225,7 @@ textarea { min-height: 88px; resize: vertical; }
       .date-strip .d-week { font-size: 19px; }
     }
 
-    /* ski-log-v2-card-chips-tall: taller elongated chips, top/bottom split, slightly inset */
+    /* ski-log-v2-card-chips-in-date: taller elongated chips, top/bottom split, slightly inset */
     .card-chips {
       justify-content: space-between;
       padding: 14% 0;
@@ -1246,6 +1246,80 @@ textarea { min-height: 88px; resize: vertical; }
       transform: scaleY(1.22);
       transform-origin: center center;
       letter-spacing: 0.02em;
+    }
+
+    /* ski-log-v2-card-chips-in-date: chips under date in the left strip; price column fills right */
+    .card-main {
+      gap: 0;
+    }
+    .card-info {
+      flex: 1 1 auto;
+      width: 100%;
+      min-width: 0;
+      gap: 10px;
+    }
+    .date-strip {
+      width: 56px;
+      padding: 6px 4px;
+      gap: 6px;
+      justify-content: space-between;
+      align-items: center;
+      align-self: stretch;
+      box-sizing: border-box;
+    }
+    .date-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+      flex-shrink: 0;
+      width: 100%;
+    }
+    .date-strip .d-day,
+    .date-strip .d-week {
+      font-size: 17px;
+    }
+    .date-strip .card-chips {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-end;
+      gap: 4px;
+      width: 100%;
+      flex: 0 0 auto;
+      padding: 0;
+      margin: 0;
+      min-height: 0;
+      box-sizing: border-box;
+    }
+    .date-strip .card-chips .badge {
+      width: 100%;
+      min-width: 0;
+      height: 26px;
+      min-height: 26px;
+      padding: 0 2px;
+      border-radius: 9px;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      box-sizing: border-box;
+    }
+    .date-strip .chip-label {
+      transform: scaleY(1.2);
+    }
+    .card-details {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    @media (min-width: 414px) {
+      .date-strip { width: 58px; }
+      .date-strip .d-day,
+      .date-strip .d-week { font-size: 18px; }
+      .date-strip .card-chips .badge {
+        height: 28px;
+        min-height: 28px;
+        font-size: 14px;
+      }
     }
 </style>
 </head>
@@ -2170,9 +2244,15 @@ textarea { min-height: 88px; resize: vertical; }
             '<div class="card-row">' +
               '<button type="button" class="card-main" data-edit="' + esc(r.id) + '" aria-label="編輯 ' + esc(formatDate(r.date)) + " " + esc(r.resort) + '">' +
                 '<div class="card-info">' +
-                  '<div class="date-strip" aria-label="' + esc(d.label) + '">' +
-                    '<span class="d-day">' + esc(d.day) + "</span>" +
-                    '<span class="d-week">（' + esc(d.week) + "）</span>" +
+                  '<div class="date-strip">' +
+                    '<div class="date-block" aria-label="' + esc(d.label) + '">' +
+                      '<span class="d-day">' + esc(d.day) + "</span>" +
+                      '<span class="d-week">（' + esc(d.week) + "）</span>" +
+                    "</div>" +
+                    '<div class="card-chips">' +
+                      '<span class="badge badge-period badge-' + r.period + '"><span class="chip-label">' + periodLabel(r.period) + "</span></span>" +
+                      '<span class="badge badge-board badge-' + r.board + '"><span class="chip-label">' + boardLabel(r.board) + "</span></span>" +
+                    "</div>" +
                   "</div>" +
                   '<div class="card-details">' +
                     '<div class="price">' + formatYen(r.price) + "</div>" +
@@ -2180,10 +2260,6 @@ textarea { min-height: 88px; resize: vertical; }
                     guest +
                     note +
                   "</div>" +
-                "</div>" +
-                '<div class="card-chips">' +
-                  '<span class="badge badge-period badge-' + r.period + '"><span class="chip-label">' + periodLabel(r.period) + "</span></span>" +
-                  '<span class="badge badge-board badge-' + r.board + '"><span class="chip-label">' + boardLabel(r.board) + "</span></span>" +
                 "</div>" +
               "</button>" +
               '<button type="button" class="card-cover" data-thumbs-for="' + esc(r.id) + '" data-record="' + esc(r.id) + '" aria-label="查看照片"></button>' +
