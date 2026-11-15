@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="2-card-photo-right">
+<html lang="zh-Hant" data-app-version="2-summary-compact">
 <head>
-  <!-- ski-log-v2-card-photo-right -->
+  <!-- ski-log-v2-summary-compact -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -740,6 +740,95 @@ textarea { min-height: 88px; resize: vertical; }
 }
 @media (min-width: 414px) {
   .card--with-photo .card-cover { width: 128px; height: 128px; }
+}
+  
+.summary { padding: 12px; }
+.stat-tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.stat-tile {
+  background: var(--surface-2);
+  border-radius: 14px;
+  padding: 10px 12px 11px;
+  min-width: 0;
+}
+.stat-tile .label { font-size: 11px; }
+.stat-tile .value {
+  font-size: 26px;
+  margin-top: 1px;
+}
+.stat-tile .stat-sub {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+  font-weight: 600;
+}
+.sum-block { margin-top: 12px; }
+.sum-block .break-title { margin-bottom: 6px; }
+.board-bar {
+  display: flex;
+  height: 30px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.board-bar .seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 750;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 8px;
+  font-variant-numeric: tabular-nums;
+}
+.board-bar .seg.snowboard {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.board-bar .seg.ski {
+  background: #eae6fb;
+  color: #4c3dad;
+}
+:root[data-theme="dark"] .board-bar .seg.ski { background: rgba(176, 168, 255, 0.18); color: #cec8ff; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .board-bar .seg.ski { background: rgba(176, 168, 255, 0.18); color: #cec8ff; }
+}
+.sum-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.sum-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: 13px;
+  font-weight: 700;
+  max-width: 100%;
+}
+.sum-chip .n {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.sum-chip .d {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
   </style>
 </head>
@@ -1572,28 +1661,52 @@ textarea { min-height: 88px; resize: vertical; }
   function renderSummary() {
     var list = filteredRecords();
     var s = summarize(list);
+    var snow = s.boards.snowboard;
+    var ski = s.boards.ski;
+    var boardTotal = snow.days + ski.days;
     var boardHtml = "";
-    [["snowboard", "單板"], ["ski", "雙板"]].forEach(function (pair) {
-      var b = s.boards[pair[0]];
-      if (!b.count) return;
-      boardHtml += '<div class="row"><span class="k">' + pair[1] + " · " + formatDays(b.days) + ' 天</span><span class="v">' + formatYen(b.income) + "</span></div>";
-    });
+    if (boardTotal) {
+      function boardSeg(cls, label, days) {
+        if (!days) return "";
+        var share = days / boardTotal;
+        var text = share >= 0.28 ? (label + " " + formatDays(days) + " 天") : formatDays(days);
+        return '<span class="seg ' + cls + '" style="flex:' + days + ' 1 0%" title="' + esc(label + " " + formatDays(days) + " 天") + '">' + esc(text) + "</span>";
+      }
+      boardHtml =
+        '<div class="sum-block">' +
+          '<div class="break-title">板類</div>' +
+          '<div class="board-bar" role="img" aria-label="' +
+            esc((snow.days ? "單板 " + formatDays(snow.days) + " 天" : "") + (snow.days && ski.days ? "，" : "") + (ski.days ? "雙板 " + formatDays(ski.days) + " 天" : "")) +
+          '">' +
+            boardSeg("snowboard", "單板", snow.days) +
+            boardSeg("ski", "雙板", ski.days) +
+          "</div>" +
+        "</div>";
+    }
     var resortKeys = Object.keys(s.resorts).sort(function (a, b) {
-      return s.resorts[b].income - s.resorts[a].income || a.localeCompare(b, "zh-Hant");
+      return s.resorts[b].days - s.resorts[a].days || a.localeCompare(b, "zh-Hant");
     });
     var resortHtml = resortKeys.map(function (name) {
       var r = s.resorts[name];
-      return '<div class="row"><span class="k">' + esc(name) + " · " + formatDays(r.days) + ' 天</span><span class="v">' + formatYen(r.income) + "</span></div>";
+      return '<span class="sum-chip"><span class="n">' + esc(name) + '</span><span class="d">' + formatDays(r.days) + " 天</span></span>";
     }).join("");
 
+    var filtered = list.length !== records.length;
     $("summary").innerHTML =
-      '<div class="totals">' +
-        '<div><div class="label">總天數</div><div class="value">' + formatDays(s.days) + '</div></div>' +
-        '<div><div class="label">總收入</div><div class="value money">' + formatYen(s.income) + "</div></div>" +
+      '<div class="stat-tiles">' +
+        '<div class="stat-tile">' +
+          '<div class="label">總天數</div>' +
+          '<div class="value">' + formatDays(s.days) + "</div>" +
+          '<div class="stat-sub">全天 ' + s.full + " 次 · 半天 " + s.half + " 次</div>" +
+        "</div>" +
+        '<div class="stat-tile">' +
+          '<div class="label">總收入</div>' +
+          '<div class="value money">' + formatYen(s.income) + "</div>" +
+          '<div class="stat-sub">' + (filtered ? "依目前篩選" : (list.length ? "共 " + list.length + " 筆" : "尚無紀錄")) + "</div>" +
+        "</div>" +
       "</div>" +
-      '<div class="sub">全天 ' + s.full + " 次 · 半天 " + s.half + " 次" + (list.length !== records.length ? "（依目前篩選）" : "") + "</div>" +
-      (boardHtml ? "<hr><div class=\"break-title\">板類</div><div class=\"rows\">" + boardHtml + "</div>" : "") +
-      (resortHtml ? "<hr><div class=\"break-title\">雪場</div><div class=\"rows\">" + resortHtml + "</div>" : "");
+      boardHtml +
+      (resortHtml ? '<div class="sum-block"><div class="break-title">雪場</div><div class="sum-chips">' + resortHtml + "</div></div>" : "");
   }
 
   function renderList() {
