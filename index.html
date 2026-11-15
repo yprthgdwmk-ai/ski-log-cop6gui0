@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="card-compact">
+<html lang="zh-Hant" data-app-version="card-headcount-level">
 <head>
-  <!-- card-compact -->
+  <!-- card-headcount-level -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1676,6 +1676,61 @@ textarea { min-height: 88px; resize: vertical; }
       .card-details .resort-line,
       .card-details .guest-line { font-size: 16px; }
     }
+
+    /* card-headcount-level: 人數/程度 pills in the space left of the photo */
+    .card-extra {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: stretch;
+      gap: 6px;
+      flex: 0 1 auto;
+      min-width: 0;
+      max-width: 4.8em;
+      margin-left: auto;
+      overflow: hidden;
+      align-self: stretch;
+    }
+    .card-extra .badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 15px;
+      min-height: 15px;
+      max-height: 15px;
+      padding: 0 6px;
+      border-radius: 9px;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      color: #346a76;
+      background: #e7f2f4;
+      border: 1px solid rgba(52, 106, 118, 0.12);
+      box-shadow: none;
+      box-sizing: border-box;
+      overflow: hidden;
+      max-width: 100%;
+      white-space: nowrap;
+    }
+    .card-extra .chip-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
+      font-weight: 800;
+    }
+    @media (min-width: 414px) {
+      .card-extra { max-width: 5.5em; }
+      .card-extra .badge { font-size: 11px; }
+    }
+    #formSheet #headcountChips,
+    #formSheet #levelChips {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      overflow-x: hidden;
+    }
 </style>
 </head>
 <body>
@@ -1749,6 +1804,19 @@ textarea { min-height: 88px; resize: vertical; }
         <label for="formGuest">客人名字（選填）</label>
         <input id="formGuest" type="text" list="guestList" maxlength="40" autocomplete="off" placeholder="例如 小明">
         <datalist id="guestList"></datalist>
+        <div class="err"></div>
+      </div>
+      <div class="field">
+        <label for="formHeadcount">人數（選填）</label>
+        <input id="formHeadcount" type="text" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="例如 2">
+        <div class="resort-chips" id="headcountChips"></div>
+        <div class="err"></div>
+      </div>
+      <div class="field">
+        <label for="formLevel">程度（選填）</label>
+        <input id="formLevel" type="text" list="levelList" maxlength="20" autocomplete="off" placeholder="例如 初學">
+        <datalist id="levelList"></datalist>
+        <div class="resort-chips" id="levelChips"></div>
         <div class="err"></div>
       </div>
       <div class="field">
@@ -1838,6 +1906,7 @@ textarea { min-height: 88px; resize: vertical; }
   var THEME_KEY = "ski-work-log-theme";
   var IDB_NAME = "ski-work-log-idb";
   var DEFAULT_RESORTS = ["八方尾根", "栂池高原", "岩岳", "五龍&47", "白馬Cortina", "乘鞍", "鹿島槍", "Sanosaka"];
+  var DEFAULT_LEVELS = ["初學", "初中級", "中級", "進階"];
   var MAX_EDGE = 1600;
   var JPEG_QUALITY = 0.8;
   var THUMB_EDGE = 360;
@@ -1947,7 +2016,22 @@ textarea { min-height: 88px; resize: vertical; }
 
   function guestLabel(name) { return name && String(name).trim() ? String(name).trim() : "未填名字"; }
 
-  function normalizeDigits(s) {
+  
+  function parseHeadcount(v) {
+    if (v == null || v === "") return null;
+    var s = String(v).trim().replace(/人$/, "");
+    var n = Number(s);
+    if (!Number.isFinite(n)) return null;
+    n = Math.floor(n);
+    if (n < 1 || n > 99) return null;
+    return n;
+  }
+
+  function headcountLabel(n) {
+    return n ? String(n) + "人" : "";
+  }
+
+function normalizeDigits(s) {
     return String(s)
       .replace(/[０-９]/g, function (ch) { return String.fromCharCode(ch.charCodeAt(0) - 0xFF10 + 0x30); })
       .replace(/[¥￥$,，\s]/g, "");
@@ -1992,6 +2076,8 @@ textarea { min-height: 88px; resize: vertical; }
       resort: String(r.resort).trim(),
       board: r.board,
       guestName: r.guestName ? String(r.guestName).trim() : "",
+      headcount: parseHeadcount(r.headcount),
+      level: r.level ? String(r.level).trim() : "",
       note: r.note ? String(r.note) : "",
       createdAt: r.createdAt || Date.now(),
       updatedAt: r.updatedAt || r.createdAt || Date.now()
@@ -2593,6 +2679,10 @@ textarea { min-height: 88px; resize: vertical; }
       var cards = g.items.map(function (r) {
         var note = r.note ? '<div class="note">' + esc(r.note) + "</div>" : "";
         var guest = r.guestName ? '<div class="guest-line">' + esc(r.guestName) + "</div>" : "";
+        var extras = [];
+        if (r.headcount) extras.push('<span class="badge extra-count"><span class="chip-label">' + esc(headcountLabel(r.headcount)) + "</span></span>");
+        if (r.level) extras.push('<span class="badge extra-level"><span class="chip-label">' + esc(r.level) + "</span></span>");
+        var extra = extras.length ? '<div class="card-extra">' + extras.join("") + "</div>" : "";
         var d = dateParts(r.date);
         return (
           '<article class="card" data-id="' + esc(r.id) + '">' +
@@ -2611,6 +2701,7 @@ textarea { min-height: 88px; resize: vertical; }
                     guest +
                     note +
                   "</div>" +
+                  extra +
                 "</div>" +
               "</button>" +
               '<button type="button" class="card-cover" data-thumbs-for="' + esc(r.id) + '" data-record="' + esc(r.id) + '" aria-label="查看照片"></button>' +
@@ -2692,6 +2783,27 @@ textarea { min-height: 88px; resize: vertical; }
     $("resortChips").innerHTML = html;
   }
 
+  function renderHeadcountChips(selected) {
+    var sel = parseHeadcount(selected);
+    var html = "";
+    for (var n = 1; n <= 10; n++) {
+      var on = sel === n;
+      html += '<button type="button" data-headcount="' + n + '" aria-pressed="' + on + '">' + n + "人</button>";
+    }
+    $("headcountChips").innerHTML = html;
+  }
+
+  function renderLevelChips(selected) {
+    var sel = String(selected || "").trim();
+    $("levelList").innerHTML = DEFAULT_LEVELS.map(function (name) {
+      return '<option value="' + esc(name) + '">';
+    }).join("");
+    $("levelChips").innerHTML = DEFAULT_LEVELS.map(function (name) {
+      var on = sel === name;
+      return '<button type="button" data-level="' + esc(name) + '" aria-pressed="' + on + '">' + esc(name) + "</button>";
+    }).join("");
+  }
+
   async function renderFormPhotos() {
     var box = $("formPhotos");
     if (!box || !formRecordId) return;
@@ -2756,10 +2868,14 @@ textarea { min-height: 88px; resize: vertical; }
     $("formPrice").value = rec ? String(rec.price) : "";
     $("formResort").value = rec ? rec.resort : "";
     $("formGuest").value = rec && rec.guestName ? rec.guestName : "";
+    $("formHeadcount").value = rec && rec.headcount ? String(rec.headcount) : "";
+    $("formLevel").value = rec && rec.level ? rec.level : "";
     $("formNote").value = rec ? rec.note : "";
     $("formDelete").style.display = rec ? "block" : "none";
     $("photoProgress").textContent = "";
     renderResortChips(rec ? rec.resort : "");
+    renderHeadcountChips(rec && rec.headcount ? rec.headcount : "");
+    renderLevelChips(rec && rec.level ? rec.level : "");
     $("copyBox").classList.remove("show");
     renderFormPhotos();
     ensurePhotoStorage().then(updatePhotoStorageHint);
@@ -2775,7 +2891,10 @@ textarea { min-height: 88px; resize: vertical; }
     var price = parsePrice($("formPrice").value);
     var resort = $("formResort").value.trim();
     var guestName = $("formGuest").value.trim();
+    var headcountRaw = $("formHeadcount").value.trim();
+    var level = $("formLevel").value.trim();
     var note = $("formNote").value.trim();
+    var headcount = null;
     var ok = true;
     if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       showFieldError("formDate", "請選擇日期");
@@ -2797,6 +2916,13 @@ textarea { min-height: 88px; resize: vertical; }
       showFieldError("formBoard", "請選擇板類");
       ok = false;
     }
+    if (headcountRaw) {
+      headcount = parseHeadcount(headcountRaw);
+      if (headcount == null) {
+        showFieldError("formHeadcount", "請輸入 1 到 99 的人數，或留空");
+        ok = false;
+      }
+    }
     if (!ok) return;
 
     var now = Date.now();
@@ -2808,12 +2934,12 @@ textarea { min-height: 88px; resize: vertical; }
       }
       records[idx] = Object.assign({}, records[idx], {
         date: date, period: period, price: price, resort: resort, board: board,
-        guestName: guestName, note: note, updatedAt: now
+        guestName: guestName, headcount: headcount, level: level, note: note, updatedAt: now
       });
     } else {
       records.push({
         id: formRecordId, date: date, period: period, price: price, resort: resort, board: board,
-        guestName: guestName, note: note, createdAt: now, updatedAt: now
+        guestName: guestName, headcount: headcount, level: level, note: note, createdAt: now, updatedAt: now
       });
     }
     if (!persist()) return;
@@ -3102,7 +3228,7 @@ textarea { min-height: 88px; resize: vertical; }
   }
 
   function toCSV(list) {
-    var header = ["日期", "時段", "價錢", "雪場", "板類", "客人名字", "備註"];
+    var header = ["日期", "時段", "價錢", "雪場", "板類", "客人名字", "人數", "程度", "備註"];
     function cell(v) {
       var s = String(v == null ? "" : v);
       if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
@@ -3110,7 +3236,7 @@ textarea { min-height: 88px; resize: vertical; }
     }
     var lines = [header.join(",")];
     sortRecords(list).slice().reverse().forEach(function (r) {
-      lines.push([r.date, periodLabel(r.period), r.price, r.resort, boardLabel(r.board), r.guestName || "", r.note].map(cell).join(","));
+      lines.push([r.date, periodLabel(r.period), r.price, r.resort, boardLabel(r.board), r.guestName || "", r.headcount || "", r.level || "", r.note].map(cell).join(","));
     });
     return "\uFEFF" + lines.join("\r\n");
   }
@@ -3335,6 +3461,36 @@ textarea { min-height: 88px; resize: vertical; }
     });
     $("formResort").addEventListener("input", function () {
       renderResortChips($("formResort").value.trim());
+    });
+    $("headcountChips").addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-headcount]");
+      if (!btn) return;
+      var n = btn.getAttribute("data-headcount");
+      if ($("formHeadcount").value === n) {
+        $("formHeadcount").value = "";
+        renderHeadcountChips("");
+      } else {
+        $("formHeadcount").value = n;
+        renderHeadcountChips(n);
+      }
+    });
+    $("formHeadcount").addEventListener("input", function () {
+      renderHeadcountChips($("formHeadcount").value.trim());
+    });
+    $("levelChips").addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-level]");
+      if (!btn) return;
+      var name = btn.getAttribute("data-level");
+      if ($("formLevel").value === name) {
+        $("formLevel").value = "";
+        renderLevelChips("");
+      } else {
+        $("formLevel").value = name;
+        renderLevelChips(name);
+      }
+    });
+    $("formLevel").addEventListener("input", function () {
+      renderLevelChips($("formLevel").value.trim());
     });
 
     $("addPhotosBtn").addEventListener("click", function () { $("photoInput").click(); });
