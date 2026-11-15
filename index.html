@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="2-card-price-date-align">
+<html lang="zh-Hant" data-app-version="card-date-gap">
 <head>
-  <!-- ski-log-v2-card-price-date-align -->
+  <!-- card-date-gap -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1091,7 +1091,7 @@ textarea { min-height: 88px; resize: vertical; }
 }
 .card-details .price { margin: 0 0 4px; }
   
-    /* ski-log-v2-card-price-date-align: spread date, details, and chips across full card height */
+    /* card-date-gap: spread date, details, and chips across full card height */
     .card-main {
       align-items: stretch;
       min-height: 144px;
@@ -1142,7 +1142,7 @@ textarea { min-height: 88px; resize: vertical; }
       min-height: 0;
     }
 
-    /* ski-log-v2-card-price-date-align: drop month; let date+info fill space; chips hug photo */
+    /* card-date-gap: drop month; let date+info fill space; chips hug photo */
     .date-strip .d-month { display: none; }
     .card-main {
       gap: 6px;
@@ -1198,7 +1198,7 @@ textarea { min-height: 88px; resize: vertical; }
       .date-strip .d-day { font-size: 18px; }
     }
 
-    /* ski-log-v2-card-price-date-align: same type for day and weekday, larger, grouped tight */
+    /* card-date-gap: same type for day and weekday, larger, grouped tight */
     .date-strip {
       justify-content: center;
       gap: 1px;
@@ -1225,7 +1225,7 @@ textarea { min-height: 88px; resize: vertical; }
       .date-strip .d-week { font-size: 19px; }
     }
 
-    /* ski-log-v2-card-price-date-align: taller elongated chips, top/bottom split, slightly inset */
+    /* card-date-gap: taller elongated chips, top/bottom split, slightly inset */
     .card-chips {
       justify-content: space-between;
       padding: 14% 0;
@@ -1248,7 +1248,7 @@ textarea { min-height: 88px; resize: vertical; }
       letter-spacing: 0.02em;
     }
 
-    /* ski-log-v2-card-price-date-align: chips under date in the left strip; price column fills right */
+    /* card-date-gap: chips under date in the left strip; price column fills right */
     .card-main {
       gap: 0;
     }
@@ -1322,7 +1322,7 @@ textarea { min-height: 88px; resize: vertical; }
       }
     }
 
-    /* ski-log-v2-card-price-date-align: wider date+price columns; name, last chip, and photo share one bottom line */
+    /* card-date-gap: wider date+price columns; name, last chip, and photo share one bottom line */
     .date-strip {
       width: 64px;
       padding: 6px 5px 0;
@@ -1364,7 +1364,7 @@ textarea { min-height: 88px; resize: vertical; }
       line-height: 1.15;
     }
 
-    /* ski-log-v2-card-price-date-align: 2x 雪場/name, grouped tight, shifted right from the date */
+    /* card-date-gap: 2x 雪場/name, grouped tight, shifted right from the date */
     .card-info {
       gap: 20px;
     }
@@ -1407,7 +1407,7 @@ textarea { min-height: 88px; resize: vertical; }
       max-width: 100%;
     }
 
-    /* ski-log-v2-card-price-date-align: price top-aligns with date; 雪場/name match price size */
+    /* card-date-gap: price top-aligns with date; 雪場/name match price size */
     .card-details {
       justify-content: flex-start;
       padding-top: 6px;
@@ -1441,6 +1441,11 @@ textarea { min-height: 88px; resize: vertical; }
       .card-details .price,
       .card-details .resort-line,
       .card-details .guest-line { font-size: 24px; }
+    }
+
+    /* card-date-gap: one line of space between day and weekday in the date strip */
+    .date-block {
+      gap: 1em;
     }
 </style>
 </head>
