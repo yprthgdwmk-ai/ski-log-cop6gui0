@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="card-date-gap">
+<html lang="zh-Hant" data-app-version="card-info-lower">
 <head>
-  <!-- card-date-gap -->
+  <!-- card-info-lower -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1446,6 +1446,11 @@ textarea { min-height: 88px; resize: vertical; }
     /* card-date-gap: one line of space between day and weekday in the date strip */
     .date-block {
       gap: 1em;
+    }
+
+    /* card-info-lower: drop 雪場 and name one line below the price */
+    .card-details .price {
+      margin-bottom: calc(1em - 6px);
     }
 </style>
 </head>
