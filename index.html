@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="card-level-options">
+<html lang="zh-Hant" data-app-version="card-meta-green">
 <head>
-  <!-- card-level-options -->
+  <!-- card-meta-green -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1733,6 +1733,50 @@ textarea { min-height: 88px; resize: vertical; }
     }
 
     /* card-level-options: 人數 1–4, 程度 零基礎/初階/進階 */
+
+    /* card-meta-green: 人數/程度 as plain green text, left by one slot, aligned to 雪場/name */
+    .card-extra { display: none; }
+    .card-details .info-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .card-details .info-row--guest {
+      margin-top: 0.5em;
+    }
+    .card-details .info-row .guest-line {
+      margin-top: 0;
+    }
+    .card-details .info-row .resort-line,
+    .card-details .info-row .guest-line {
+      flex: 0 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: calc(100% - 3.2em);
+    }
+    .card-details .meta-line {
+      flex: 0 0 auto;
+      min-width: 0;
+      max-width: 42%;
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--money);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    @media (min-width: 414px) {
+      .card-details .meta-line { font-size: 16px; }
+    }
+
+    .card--with-photo .card-main { padding-right: 8px; }
+    .card-info, .card-details { min-width: 0; overflow: hidden; }
 </style>
 </head>
 <body>
@@ -2680,11 +2724,19 @@ function normalizeDigits(s) {
       var sum = summarize(g.items);
       var cards = g.items.map(function (r) {
         var note = r.note ? '<div class="note">' + esc(r.note) + "</div>" : "";
-        var guest = r.guestName ? '<div class="guest-line">' + esc(r.guestName) + "</div>" : "";
-        var extras = [];
-        if (r.headcount) extras.push('<span class="badge extra-count"><span class="chip-label">' + esc(headcountLabel(r.headcount)) + "</span></span>");
-        if (r.level) extras.push('<span class="badge extra-level"><span class="chip-label">' + esc(r.level) + "</span></span>");
-        var extra = extras.length ? '<div class="card-extra">' + extras.join("") + "</div>" : "";
+        var countHtml = r.headcount ? '<div class="meta-line extra-count">' + esc(headcountLabel(r.headcount)) + "</div>" : "";
+        var levelHtml = r.level ? '<div class="meta-line extra-level">' + esc(r.level) + "</div>" : "";
+        var resortRow = '<div class="info-row">' +
+          '<div class="resort-line">' + esc(r.resort) + "</div>" +
+          countHtml +
+        "</div>";
+        var guestRow = "";
+        if (r.guestName || r.level) {
+          guestRow = '<div class="info-row info-row--guest">' +
+            '<div class="guest-line">' + (r.guestName ? esc(r.guestName) : "") + "</div>" +
+            levelHtml +
+          "</div>";
+        }
         var d = dateParts(r.date);
         return (
           '<article class="card" data-id="' + esc(r.id) + '">' +
@@ -2699,11 +2751,10 @@ function normalizeDigits(s) {
                   "</div>" +
                   '<div class="card-details">' +
                     '<div class="price">' + formatYen(r.price) + "</div>" +
-                    '<div class="resort-line">' + esc(r.resort) + "</div>" +
-                    guest +
+                    resortRow +
+                    guestRow +
                     note +
                   "</div>" +
-                  extra +
                 "</div>" +
               "</button>" +
               '<button type="button" class="card-cover" data-thumbs-for="' + esc(r.id) + '" data-record="' + esc(r.id) + '" aria-label="查看照片"></button>' +
