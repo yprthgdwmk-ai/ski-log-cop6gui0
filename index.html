@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="form-compact-b">
+<html lang="zh-Hant" data-app-version="form-row-order">
 <head>
-  <!-- form-compact-b -->
+  <!-- form-row-order -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1939,12 +1939,15 @@ textarea { min-height: 88px; resize: vertical; }
       margin-bottom: 12px;
       align-items: start;
     }
-    #formSheet .form-row.date-period { grid-template-columns: 1.2fr 1fr; }
-    #formSheet .form-row.price-resort { grid-template-columns: 1fr 1.05fr; }
-    #formSheet .form-row.board-guest { grid-template-columns: 0.95fr 1.15fr; }
-    #formSheet .form-row.meta-row {
-      grid-template-columns: auto minmax(0, 1fr);
-      gap: 10px;
+    #formSheet .form-row.date-price { grid-template-columns: 1.2fr 1fr; }
+    #formSheet .form-row.guest-headcount {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+    }
+    #formSheet .form-row.resort-period { grid-template-columns: 1.1fr 1fr; }
+    #formSheet .form-row.board-level {
+      grid-template-columns: 1fr 1.05fr;
+      align-items: end;
     }
     #formSheet .form-row .field { margin-bottom: 0; min-width: 0; }
     #formSheet .field-full { margin-bottom: 12px; }
@@ -2181,10 +2184,45 @@ textarea { min-height: 88px; resize: vertical; }
     <div class="grab" aria-hidden="true"></div>
     <h2 id="formTitle">新增紀錄</h2>
     <form id="recordForm" action="javascript:void(0)">
-      <div class="form-row date-period">
+      <div class="form-row date-price">
         <div class="field">
           <label for="formDate">日期</label>
           <input id="formDate" type="date" required>
+          <div class="err"></div>
+        </div>
+        <div class="field">
+          <label for="formPrice">價錢</label>
+          <div class="price-wrap">
+            <span class="yen" aria-hidden="true">¥</span>
+            <input id="formPrice" type="text" inputmode="numeric" autocomplete="off" placeholder="25000">
+          </div>
+          <div class="err"></div>
+        </div>
+      </div>
+      <div class="form-row guest-headcount">
+        <div class="field">
+          <label for="formGuest">客人名字</label>
+          <input id="formGuest" type="text" list="guestList" maxlength="40" autocomplete="off" placeholder="例如 小明">
+          <datalist id="guestList"></datalist>
+          <div class="err"></div>
+        </div>
+        <div class="field field-stepper">
+          <span class="sr-only" id="headcountLabel">人數（選填）</span>
+          <div class="stepper" role="group" aria-labelledby="headcountLabel">
+            <button type="button" class="pm" id="headcountMinus" aria-label="減少人數">−</button>
+            <div class="num" id="headcountValue" aria-live="polite">—</div>
+            <button type="button" class="pm" id="headcountPlus" aria-label="增加人數">+</button>
+          </div>
+          <input type="hidden" id="formHeadcount" value="">
+          <div class="err"></div>
+        </div>
+      </div>
+      <div class="form-row resort-period">
+        <div class="field">
+          <label for="formResortSelect">雪場</label>
+          <select id="formResortSelect" aria-label="雪場"></select>
+          <input id="formResortCustom" type="text" maxlength="40" autocomplete="off" placeholder="請輸入雪場名稱" hidden>
+          <input type="hidden" id="formResort">
           <div class="err"></div>
         </div>
         <div class="field" id="formPeriodField">
@@ -2196,48 +2234,13 @@ textarea { min-height: 88px; resize: vertical; }
           <div class="err"></div>
         </div>
       </div>
-      <div class="form-row price-resort">
-        <div class="field">
-          <label for="formPrice">價錢</label>
-          <div class="price-wrap">
-            <span class="yen" aria-hidden="true">¥</span>
-            <input id="formPrice" type="text" inputmode="numeric" autocomplete="off" placeholder="25000">
-          </div>
-          <div class="err"></div>
-        </div>
-        <div class="field">
-          <label for="formResortSelect">雪場</label>
-          <select id="formResortSelect" aria-label="雪場"></select>
-          <input id="formResortCustom" type="text" maxlength="40" autocomplete="off" placeholder="請輸入雪場名稱" hidden>
-          <input type="hidden" id="formResort">
-          <div class="err"></div>
-        </div>
-      </div>
-      <div class="form-row board-guest">
+      <div class="form-row board-level">
         <div class="field">
           <label>板類</label>
           <div class="seg" id="formBoard">
             <button type="button" data-seg="board" data-value="snowboard" aria-pressed="true">單板</button>
             <button type="button" data-seg="board" data-value="ski" aria-pressed="false">雙板</button>
           </div>
-          <div class="err"></div>
-        </div>
-        <div class="field">
-          <label for="formGuest">客人名字</label>
-          <input id="formGuest" type="text" list="guestList" maxlength="40" autocomplete="off" placeholder="例如 小明">
-          <datalist id="guestList"></datalist>
-          <div class="err"></div>
-        </div>
-      </div>
-      <div class="form-row meta-row">
-        <div class="field field-stepper">
-          <span class="sr-only" id="headcountLabel">人數（選填）</span>
-          <div class="stepper" role="group" aria-labelledby="headcountLabel">
-            <button type="button" class="pm" id="headcountMinus" aria-label="減少人數">−</button>
-            <div class="num" id="headcountValue" aria-live="polite">—</div>
-            <button type="button" class="pm" id="headcountPlus" aria-label="增加人數">+</button>
-          </div>
-          <input type="hidden" id="formHeadcount" value="">
           <div class="err"></div>
         </div>
         <div class="field field-level">
