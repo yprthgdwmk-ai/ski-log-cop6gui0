@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="2-summary-compact">
+<html lang="zh-Hant" data-app-version="2-form-no-hscroll">
 <head>
-  <!-- ski-log-v2-summary-compact -->
+  <!-- ski-log-v2-form-no-hscroll -->
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -84,6 +84,8 @@ html, body {
   margin: 0;
   padding: 0;
   min-height: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font);
@@ -335,14 +337,17 @@ header.appbar h1 {
   right: 0;
   bottom: 0;
   z-index: 50;
-  max-width: 560px;
+  width: 100%;
+  max-width: min(560px, 100%);
   margin: 0 auto;
   background: var(--surface);
   border-radius: 20px 20px 0 0;
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.2);
-  padding: 8px 16px calc(16px + var(--safe-b));
+  padding: 8px max(22px, env(safe-area-inset-right, 0px)) calc(16px + var(--safe-b)) max(22px, env(safe-area-inset-left, 0px));
   max-height: min(92vh, 920px);
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
   transform: translateY(110%);
   transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -371,8 +376,11 @@ header.appbar h1 {
 .field.has-err input, .field.has-err textarea {
   border-color: var(--danger);
 }
-input[type="date"], input[type="text"], input[type="tel"], textarea {
+input[type="date"], input[type="text"], input[type="tel"], textarea, select {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  display: block;
   min-height: var(--tap);
   border: 1px solid var(--line);
   background: var(--surface-2);
@@ -380,6 +388,13 @@ input[type="date"], input[type="text"], input[type="tel"], textarea {
   padding: 12px 14px;
   font-size: 16px;
   outline: none;
+}
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  max-width: 100%;
+  display: block;
 }
 input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 textarea { min-height: 88px; resize: vertical; }
@@ -419,11 +434,12 @@ textarea { min-height: 88px; resize: vertical; }
 .price-wrap input { padding-left: 32px; font-variant-numeric: tabular-nums; }
 .resort-chips {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
   padding: 8px 0 2px;
-  scrollbar-width: none;
+  max-width: 100%;
+  min-width: 0;
 }
 .resort-chips::-webkit-scrollbar { display: none; }
 .resort-chips button {
@@ -829,6 +845,39 @@ textarea { min-height: 88px; resize: vertical; }
   font-weight: 650;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+  
+#formSheet,
+#formSheet #recordForm,
+#formSheet .field,
+#formSheet .price-wrap,
+#formSheet .seg,
+#formSheet .photo-grid,
+#formSheet .actions {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+#formSheet .seg > *,
+#formSheet .field > *,
+#formSheet .price-wrap > * {
+  min-width: 0;
+  max-width: 100%;
+}
+#formSheet .photo-grid {
+  overflow-x: hidden;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+#formSheet .photo-grid img,
+#formSheet .photo-cell,
+#formSheet .photo-cell .photo-open {
+  max-width: 100%;
+}
+#backupSheet,
+#albumSheet {
+  overflow-x: hidden;
+  max-width: min(560px, 100%);
 }
   </style>
 </head>
