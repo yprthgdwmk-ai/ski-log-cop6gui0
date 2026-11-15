@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="card-meta-black">
+<html lang="zh-Hant" data-app-version="form-compact-b">
 <head>
-  <!-- card-meta-black -->
+  <!-- form-compact-b -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1724,13 +1724,6 @@ textarea { min-height: 88px; resize: vertical; }
       .card-extra { max-width: 5.5em; }
       .card-extra .badge { font-size: 11px; }
     }
-    #formSheet #headcountChips,
-    #formSheet #levelChips {
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
-      overflow-x: hidden;
-    }
 
     /* card-level-options: 人數 1–4, 程度 零基礎/初階/進階 */
 
@@ -1918,6 +1911,243 @@ textarea { min-height: 88px; resize: vertical; }
         color: #f2f4f6;
       }
     }
+
+    /* form-compact-b */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    #formSheet .form-row,
+    #formSheet .photo-row,
+    #formSheet .stepper,
+    #formSheet .level-dd,
+    #formSheet .form-actions {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+    }
+    #formSheet .form-row {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: start;
+    }
+    #formSheet .form-row.date-period { grid-template-columns: 1.2fr 1fr; }
+    #formSheet .form-row.price-resort { grid-template-columns: 1fr 1.05fr; }
+    #formSheet .form-row.board-guest { grid-template-columns: 0.95fr 1.15fr; }
+    #formSheet .form-row.meta-row {
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 10px;
+    }
+    #formSheet .form-row .field { margin-bottom: 0; min-width: 0; }
+    #formSheet .field-full { margin-bottom: 12px; }
+    #formSheet .field label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    #formSheet input[type="date"],
+    #formSheet input[type="text"],
+    #formSheet select,
+    #formSheet .seg button {
+      height: 44px;
+      min-height: 44px;
+      border-radius: 12px;
+      font-size: 16px;
+    }
+    #formSheet input[type="date"] {
+      -webkit-appearance: none;
+      appearance: none;
+      min-width: 0;
+      max-width: 100%;
+      width: 100%;
+    }
+    #formSheet select {
+      -webkit-appearance: none;
+      appearance: none;
+      background-color: var(--surface-2);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%230c6d7c' d='M1.2 1.3L6 6.1l4.8-4.8' stroke='%230c6d7c' stroke-width='1.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 12px 8px;
+      padding-right: 32px;
+      font-weight: 700;
+    }
+    #formSheet #formResortCustom,
+    #formSheet #formLevelCustom {
+      margin-top: 8px;
+    }
+    #formSheet [hidden] {
+      display: none !important;
+    }
+    #formSheet textarea#formNote {
+      min-height: 52px;
+      height: 52px;
+      resize: vertical;
+      padding: 10px 12px;
+      border-radius: 12px;
+      line-height: 1.4;
+    }
+    #formSheet .stepper {
+      display: flex;
+      align-items: center;
+      height: 44px;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    #formSheet .stepper .pm {
+      width: 38px;
+      height: 44px;
+      min-height: 44px;
+      flex: 0 0 38px;
+      border: 0;
+      background: transparent;
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--text);
+      border-radius: 0;
+      line-height: 1;
+    }
+    #formSheet .stepper .pm:disabled { opacity: 0.32; }
+    #formSheet .stepper .num {
+      flex: 1;
+      min-width: 2.75em;
+      padding: 0 6px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 15px;
+      font-variant-numeric: tabular-nums;
+    }
+    #formSheet .level-dd {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 44px;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      border-radius: 12px;
+      padding: 0 4px 0 12px;
+    }
+    #formSheet .level-dd .k {
+      flex: 0 0 auto;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+    #formSheet .level-dd select {
+      flex: 1;
+      min-width: 0;
+      height: 42px;
+      min-height: 42px;
+      border: 0;
+      background-color: transparent;
+      padding: 0 28px 0 0;
+      font-weight: 800;
+      font-size: 15px;
+    }
+    #formSheet .photo-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    #formSheet .photo-add {
+      width: 64px;
+      height: 64px;
+      flex: 0 0 64px;
+      border-radius: 14px;
+      border: 1.5px dashed var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 0;
+      min-height: 0;
+    }
+    #formSheet .photo-add .plus {
+      font-size: 20px;
+      line-height: 1;
+      font-weight: 500;
+    }
+    #formSheet .photo-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      flex: 1 1 auto;
+      width: auto;
+      min-width: 0;
+      grid-template-columns: none;
+      overflow-x: hidden;
+    }
+    #formSheet .photo-cell {
+      width: 64px;
+      height: 64px;
+      flex: 0 0 64px;
+      aspect-ratio: 1;
+      border-radius: 14px;
+    }
+    #formSheet .photo-cell .photo-open,
+    #formSheet .photo-cell img {
+      width: 64px;
+      height: 64px;
+      max-width: 100%;
+      object-fit: cover;
+    }
+    #formSheet .form-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    #formSheet .form-actions .btn.primary {
+      height: 48px;
+      min-height: 48px;
+      border-radius: 14px;
+    }
+    #formSheet .form-actions .btn.cancel {
+      background: transparent;
+      color: var(--muted);
+      min-height: 40px;
+      height: 40px;
+      font-weight: 700;
+    }
+    #formSheet .form-actions .btn.danger {
+      min-height: 44px;
+    }
+    #formSheet .photo-hint:empty,
+    #formSheet .photo-progress:empty { display: none; }
+    #formSheet .field.has-err input:not([type="hidden"]),
+    #formSheet .field.has-err textarea,
+    #formSheet .field.has-err select,
+    #formSheet .field.has-err .level-dd,
+    #formSheet .field.has-err .stepper {
+      border-color: var(--danger);
+    }
+    :root[data-theme="dark"] #formSheet select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1.2 1.3L6 6.1l4.8-4.8' stroke='%234db8c7' stroke-width='1.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) #formSheet select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1.2 1.3L6 6.1l4.8-4.8' stroke='%234db8c7' stroke-width='1.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      }
+    }
 </style>
 </head>
 <body>
@@ -1951,77 +2181,98 @@ textarea { min-height: 88px; resize: vertical; }
     <div class="grab" aria-hidden="true"></div>
     <h2 id="formTitle">新增紀錄</h2>
     <form id="recordForm" action="javascript:void(0)">
-      <div class="field">
-        <label for="formDate">日期</label>
-        <input id="formDate" type="date" required>
-        <div class="err"></div>
-      </div>
-      <div class="field" id="formPeriodField">
-        <label>時段</label>
-        <div class="seg" id="formPeriod">
-          <button type="button" data-seg="period" data-value="half" aria-pressed="false">半天</button>
-          <button type="button" data-seg="period" data-value="full" aria-pressed="true">全天</button>
+      <div class="form-row date-period">
+        <div class="field">
+          <label for="formDate">日期</label>
+          <input id="formDate" type="date" required>
+          <div class="err"></div>
         </div>
-        <div class="err"></div>
-      </div>
-      <div class="field">
-        <label for="formPrice">價錢（日圓）</label>
-        <div class="price-wrap">
-          <span class="yen" aria-hidden="true">¥</span>
-          <input id="formPrice" type="text" inputmode="numeric" autocomplete="off" placeholder="25000">
+        <div class="field" id="formPeriodField">
+          <label>時段</label>
+          <div class="seg" id="formPeriod">
+            <button type="button" data-seg="period" data-value="half" aria-pressed="false">半天</button>
+            <button type="button" data-seg="period" data-value="full" aria-pressed="true">全天</button>
+          </div>
+          <div class="err"></div>
         </div>
-        <div class="err"></div>
       </div>
-      <div class="field">
-        <label for="formResort">雪場</label>
-        <input id="formResort" type="text" list="resortList" autocomplete="off" placeholder="例如 栂池高原">
-        <datalist id="resortList"></datalist>
-        <div class="resort-chips" id="resortChips"></div>
-        <div class="err"></div>
-      </div>
-      <div class="field">
-        <label>板類</label>
-        <div class="seg" id="formBoard">
-          <button type="button" data-seg="board" data-value="snowboard" aria-pressed="true">單板</button>
-          <button type="button" data-seg="board" data-value="ski" aria-pressed="false">雙板</button>
+      <div class="form-row price-resort">
+        <div class="field">
+          <label for="formPrice">價錢</label>
+          <div class="price-wrap">
+            <span class="yen" aria-hidden="true">¥</span>
+            <input id="formPrice" type="text" inputmode="numeric" autocomplete="off" placeholder="25000">
+          </div>
+          <div class="err"></div>
         </div>
-        <div class="err"></div>
+        <div class="field">
+          <label for="formResortSelect">雪場</label>
+          <select id="formResortSelect" aria-label="雪場"></select>
+          <input id="formResortCustom" type="text" maxlength="40" autocomplete="off" placeholder="請輸入雪場名稱" hidden>
+          <input type="hidden" id="formResort">
+          <div class="err"></div>
+        </div>
       </div>
-      <div class="field">
-        <label for="formGuest">客人名字（選填）</label>
-        <input id="formGuest" type="text" list="guestList" maxlength="40" autocomplete="off" placeholder="例如 小明">
-        <datalist id="guestList"></datalist>
-        <div class="err"></div>
+      <div class="form-row board-guest">
+        <div class="field">
+          <label>板類</label>
+          <div class="seg" id="formBoard">
+            <button type="button" data-seg="board" data-value="snowboard" aria-pressed="true">單板</button>
+            <button type="button" data-seg="board" data-value="ski" aria-pressed="false">雙板</button>
+          </div>
+          <div class="err"></div>
+        </div>
+        <div class="field">
+          <label for="formGuest">客人名字</label>
+          <input id="formGuest" type="text" list="guestList" maxlength="40" autocomplete="off" placeholder="例如 小明">
+          <datalist id="guestList"></datalist>
+          <div class="err"></div>
+        </div>
       </div>
-      <div class="field">
-        <label for="formHeadcount">人數（選填）</label>
-        <input id="formHeadcount" type="text" inputmode="numeric" autocomplete="off" maxlength="1" placeholder="例如 2">
-        <div class="resort-chips" id="headcountChips"></div>
-        <div class="err"></div>
+      <div class="form-row meta-row">
+        <div class="field field-stepper">
+          <span class="sr-only" id="headcountLabel">人數（選填）</span>
+          <div class="stepper" role="group" aria-labelledby="headcountLabel">
+            <button type="button" class="pm" id="headcountMinus" aria-label="減少人數">−</button>
+            <div class="num" id="headcountValue" aria-live="polite">—</div>
+            <button type="button" class="pm" id="headcountPlus" aria-label="增加人數">+</button>
+          </div>
+          <input type="hidden" id="formHeadcount" value="">
+          <div class="err"></div>
+        </div>
+        <div class="field field-level">
+          <label class="sr-only" for="formLevelSelect">程度（選填）</label>
+          <div class="level-dd">
+            <span class="k">程度</span>
+            <select id="formLevelSelect" aria-label="程度"></select>
+          </div>
+          <input id="formLevelCustom" type="text" maxlength="20" autocomplete="off" placeholder="請輸入程度" hidden>
+          <input type="hidden" id="formLevel" value="">
+          <div class="err"></div>
+        </div>
       </div>
-      <div class="field">
-        <label for="formLevel">程度（選填）</label>
-        <input id="formLevel" type="text" list="levelList" maxlength="20" autocomplete="off" placeholder="例如 初階">
-        <datalist id="levelList"></datalist>
-        <div class="resort-chips" id="levelChips"></div>
-        <div class="err"></div>
-      </div>
-      <div class="field">
+      <div class="field field-full">
         <label for="formNote">備註（選填）</label>
-        <textarea id="formNote" maxlength="500" placeholder="集合時間等"></textarea>
+        <textarea id="formNote" maxlength="500" rows="2" placeholder="集合時間等"></textarea>
         <div class="err"></div>
       </div>
-      <div class="field" id="feature-guest-photos">
-        <div class="photo-grid" id="formPhotos"></div>
+      <div class="field field-full" id="feature-guest-photos">
+        <label>照片</label>
+        <div class="photo-row">
+          <button type="button" class="photo-add" id="addPhotosBtn" aria-label="加入照片">
+            <span class="plus" aria-hidden="true">+</span>
+            <span>加入</span>
+          </button>
+          <div class="photo-grid" id="formPhotos"></div>
+        </div>
         <p class="photo-progress" id="photoProgress"></p>
         <div id="photoCount" class="photo-hint"></div>
-        <button type="button" class="btn ghost" id="addPhotosBtn">加入照片</button>
         <input id="photoInput" type="file" accept="image/*" multiple hidden>
         <div class="err"></div>
       </div>
-      <div class="actions">
+      <div class="actions form-actions">
         <button type="submit" class="btn primary" id="formSave">儲存</button>
-        <button type="button" class="btn ghost" id="formCancel">取消</button>
+        <button type="button" class="btn cancel" id="formCancel">取消</button>
         <button type="button" class="btn danger" id="formDelete" style="display:none">刪除</button>
       </div>
     </form>
@@ -2954,9 +3205,6 @@ function normalizeDigits(s) {
   }
 
   function renderDatalist() {
-    $("resortList").innerHTML = usedResorts().map(function (name) {
-      return '<option value="' + esc(name) + '">';
-    }).join("");
     if ($("guestList")) {
       $("guestList").innerHTML = usedGuests().map(function (name) {
         return '<option value="' + esc(name) + '">';
@@ -2964,33 +3212,87 @@ function normalizeDigits(s) {
     }
   }
 
-  function renderResortChips(selected) {
-    var html = usedResorts().map(function (name) {
-      var on = selected === name;
-      return '<button type="button" data-resort="' + esc(name) + '" aria-pressed="' + on + '">' + esc(name) + "</button>";
-    }).join("");
-    $("resortChips").innerHTML = html;
+  function syncResortValue() {
+    var sel = $("formResortSelect");
+    if (!sel) return;
+    var v = sel.value;
+    $("formResort").value = (v === "__other__") ? $("formResortCustom").value.trim() : String(v || "").trim();
   }
 
-  function renderHeadcountChips(selected) {
-    var sel = parseHeadcount(selected);
-    var html = "";
-    for (var n = 1; n <= 4; n++) {
-      var on = sel === n;
-      html += '<button type="button" data-headcount="' + n + '" aria-pressed="' + on + '">' + n + "人</button>";
+  function renderResortSelect(selected) {
+    var cur = String(selected == null ? $("formResort").value : selected).trim();
+    var names = usedResorts();
+    var known = cur !== "" && names.indexOf(cur) !== -1;
+    var html = '<option value="">請選擇</option>';
+    names.forEach(function (name) {
+      html += '<option value="' + esc(name) + '">' + esc(name) + "</option>";
+    });
+    html += '<option value="__other__">其他</option>';
+    var sel = $("formResortSelect");
+    sel.innerHTML = html;
+    if (!cur) sel.value = "";
+    else if (known) sel.value = cur;
+    else sel.value = "__other__";
+    var custom = $("formResortCustom");
+    if (sel.value === "__other__") {
+      custom.hidden = false;
+      custom.value = cur;
+    } else {
+      custom.hidden = true;
+      custom.value = "";
     }
-    $("headcountChips").innerHTML = html;
+    $("formResort").value = cur;
   }
 
-  function renderLevelChips(selected) {
-    var sel = String(selected || "").trim();
-    $("levelList").innerHTML = DEFAULT_LEVELS.map(function (name) {
-      return '<option value="' + esc(name) + '">';
-    }).join("");
-    $("levelChips").innerHTML = DEFAULT_LEVELS.map(function (name) {
-      var on = sel === name;
-      return '<button type="button" data-level="' + esc(name) + '" aria-pressed="' + on + '">' + esc(name) + "</button>";
-    }).join("");
+  function syncLevelValue() {
+    var sel = $("formLevelSelect");
+    if (!sel) return;
+    var v = sel.value;
+    $("formLevel").value = (v === "__other__") ? $("formLevelCustom").value.trim() : String(v || "").trim();
+  }
+
+  function renderLevelSelect(selected) {
+    var cur = String(selected == null ? $("formLevel").value : selected).trim();
+    var known = DEFAULT_LEVELS.indexOf(cur) !== -1;
+    var html = '<option value="">未填</option>';
+    DEFAULT_LEVELS.forEach(function (name) {
+      html += '<option value="' + esc(name) + '">' + esc(name) + "</option>";
+    });
+    html += '<option value="__other__">其他</option>';
+    var sel = $("formLevelSelect");
+    sel.innerHTML = html;
+    if (!cur) sel.value = "";
+    else if (known) sel.value = cur;
+    else sel.value = "__other__";
+    var custom = $("formLevelCustom");
+    if (sel.value === "__other__") {
+      custom.hidden = false;
+      custom.value = cur;
+    } else {
+      custom.hidden = true;
+      custom.value = "";
+    }
+    $("formLevel").value = cur;
+  }
+
+  function renderHeadcountStepper(selected) {
+    var n = parseHeadcount(selected);
+    $("formHeadcount").value = n ? String(n) : "";
+    $("headcountValue").textContent = n ? (n + "人") : "—";
+    $("headcountMinus").disabled = !n;
+    $("headcountPlus").disabled = !!(n && n >= 4);
+  }
+
+  function stepHeadcount(delta) {
+    var n = parseHeadcount($("formHeadcount").value);
+    if (delta < 0) {
+      if (!n) return;
+      n = n <= 1 ? null : n - 1;
+    } else {
+      if (!n) n = 1;
+      else if (n < 4) n += 1;
+    }
+    renderHeadcountStepper(n);
   }
 
   async function renderFormPhotos() {
@@ -3015,7 +3317,7 @@ function normalizeDigits(s) {
     var total = list.length + pendingPreviews.length;
     var count = $("photoCount");
     if (count) {
-      if (!total) count.textContent = "尚未加入照片";
+      if (!total) count.textContent = "";
       else if (pendingPreviews.length) count.textContent = "已有 " + list.length + " 張，正在處理 " + pendingPreviews.length + " 張";
       else count.textContent = "已有 " + list.length + " 張照片";
     }
@@ -3062,9 +3364,9 @@ function normalizeDigits(s) {
     $("formNote").value = rec ? rec.note : "";
     $("formDelete").style.display = rec ? "block" : "none";
     $("photoProgress").textContent = "";
-    renderResortChips(rec ? rec.resort : "");
-    renderHeadcountChips(rec && rec.headcount ? rec.headcount : "");
-    renderLevelChips(rec && rec.level ? rec.level : "");
+    renderResortSelect(rec ? rec.resort : "");
+    renderHeadcountStepper(rec && rec.headcount ? rec.headcount : "");
+    renderLevelSelect(rec && rec.level ? rec.level : "");
     $("copyBox").classList.remove("show");
     renderFormPhotos();
     ensurePhotoStorage().then(updatePhotoStorageHint);
@@ -3073,6 +3375,8 @@ function normalizeDigits(s) {
   }
 
   function saveForm() {
+    syncResortValue();
+    syncLevelValue();
     clearFieldErrors();
     var date = $("formDate").value;
     var period = getSeg("period");
@@ -3643,51 +3947,34 @@ function normalizeDigits(s) {
       setSeg("board", btn.getAttribute("data-value"));
     });
 
-    $("resortChips").addEventListener("click", function (e) {
-      var btn = e.target.closest("[data-resort]");
-      if (!btn) return;
-      $("formResort").value = btn.getAttribute("data-resort");
-      renderResortChips($("formResort").value);
-    });
-    $("formResort").addEventListener("input", function () {
-      renderResortChips($("formResort").value.trim());
-    });
-    $("headcountChips").addEventListener("click", function (e) {
-      var btn = e.target.closest("[data-headcount]");
-      if (!btn) return;
-      var n = btn.getAttribute("data-headcount");
-      if ($("formHeadcount").value === n) {
-        $("formHeadcount").value = "";
-        renderHeadcountChips("");
+    $("formResortSelect").addEventListener("change", function () {
+      var custom = $("formResortCustom");
+      if (this.value === "__other__") {
+        custom.hidden = false;
+        custom.value = "";
+        custom.focus();
       } else {
-        $("formHeadcount").value = n;
-        renderHeadcountChips(n);
+        custom.hidden = true;
+        custom.value = "";
       }
+      syncResortValue();
     });
-    $("formHeadcount").addEventListener("input", function () {
-      var raw = $("formHeadcount").value.trim();
-      var n = parseHeadcount(raw);
-      if (n != null && n > 4) {
-        $("formHeadcount").value = "4";
-        raw = "4";
-      }
-      renderHeadcountChips(raw);
-    });
-    $("levelChips").addEventListener("click", function (e) {
-      var btn = e.target.closest("[data-level]");
-      if (!btn) return;
-      var name = btn.getAttribute("data-level");
-      if ($("formLevel").value === name) {
-        $("formLevel").value = "";
-        renderLevelChips("");
+    $("formResortCustom").addEventListener("input", syncResortValue);
+    $("headcountMinus").addEventListener("click", function () { stepHeadcount(-1); });
+    $("headcountPlus").addEventListener("click", function () { stepHeadcount(1); });
+    $("formLevelSelect").addEventListener("change", function () {
+      var custom = $("formLevelCustom");
+      if (this.value === "__other__") {
+        custom.hidden = false;
+        if (!custom.value) custom.value = "";
+        custom.focus();
       } else {
-        $("formLevel").value = name;
-        renderLevelChips(name);
+        custom.hidden = true;
+        custom.value = "";
       }
+      syncLevelValue();
     });
-    $("formLevel").addEventListener("input", function () {
-      renderLevelChips($("formLevel").value.trim());
-    });
+    $("formLevelCustom").addEventListener("input", syncLevelValue);
 
     $("addPhotosBtn").addEventListener("click", function () { $("photoInput").click(); });
     $("photoInput").addEventListener("change", function (e) {
