@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="2-card-no-month">
+<html lang="zh-Hant" data-app-version="2-card-date-uniform">
 <head>
-  <!-- ski-log-v2-card-no-month -->
+  <!-- ski-log-v2-card-date-uniform -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1091,7 +1091,7 @@ textarea { min-height: 88px; resize: vertical; }
 }
 .card-details .price { margin: 0 0 4px; }
   
-    /* ski-log-v2-card-no-month: spread date, details, and chips across full card height */
+    /* ski-log-v2-card-date-uniform: spread date, details, and chips across full card height */
     .card-main {
       align-items: stretch;
       min-height: 144px;
@@ -1142,7 +1142,7 @@ textarea { min-height: 88px; resize: vertical; }
       min-height: 0;
     }
 
-    /* ski-log-v2-card-no-month: drop month; let date+info fill space; chips hug photo */
+    /* ski-log-v2-card-date-uniform: drop month; let date+info fill space; chips hug photo */
     .date-strip .d-month { display: none; }
     .card-main {
       gap: 6px;
@@ -1196,6 +1196,33 @@ textarea { min-height: 88px; resize: vertical; }
       .card-details .price,
       .card .price { font-size: 24px; }
       .date-strip .d-day { font-size: 18px; }
+    }
+
+    /* ski-log-v2-card-date-uniform: same type for day and weekday, larger, grouped tight */
+    .date-strip {
+      justify-content: center;
+      gap: 1px;
+      width: 52px;
+      padding: 8px 0;
+    }
+    .date-strip .d-day,
+    .date-strip .d-week {
+      font-family: inherit;
+      font-size: 18px;
+      font-weight: 800;
+      font-style: normal;
+      letter-spacing: -0.06em;
+      line-height: 1.15;
+      margin: 0;
+      padding: 0;
+      color: var(--text);
+      white-space: nowrap;
+      text-align: center;
+    }
+    @media (min-width: 414px) {
+      .date-strip { width: 54px; }
+      .date-strip .d-day,
+      .date-strip .d-week { font-size: 19px; }
     }
 </style>
 </head>
