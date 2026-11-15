@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="2-photo-label-trim">
+<html lang="zh-Hant" data-app-version="2-card-mid-chips">
 <head>
-  <!-- ski-log-v2-photo-label-trim -->
+  <!-- ski-log-v2-card-mid-chips -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -879,6 +879,79 @@ textarea { min-height: 88px; resize: vertical; }
   overflow-x: hidden;
   max-width: min(560px, 100%);
 }
+  
+.card-row {
+  align-items: stretch;
+  gap: 0;
+  min-width: 0;
+  width: 100%;
+}
+.card-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  padding: 12px 12px 12px 14px;
+  text-align: left;
+}
+.card--with-photo .card-main {
+  padding: 12px 6px 12px 14px;
+}
+.card-info {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+.card .date {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  line-height: 1.3;
+}
+.card .price {
+  font-size: 20px;
+  font-weight: 760;
+  letter-spacing: -0.03em;
+  margin: 1px 0 6px;
+}
+.guest-line {
+  margin-top: 0;
+  font-size: 18px;
+  font-weight: 650;
+  line-height: 1.25;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.resort-line {
+  margin-top: 2px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.card-chips {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 0 2px;
+}
+.card-chips .badge {
+  justify-content: center;
+  min-width: 44px;
+}
+.card .note { margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -1788,9 +1861,17 @@ textarea { min-height: 88px; resize: vertical; }
           '<article class="card" data-id="' + esc(r.id) + '">' +
             '<div class="card-row">' +
               '<button type="button" class="card-main" data-edit="' + esc(r.id) + '" aria-label="編輯 ' + esc(formatDate(r.date)) + " " + esc(r.resort) + '">' +
-                '<div class="top"><div class="date">' + esc(formatDateShort(r.date)) + "</div><div class=\"price\">" + formatYen(r.price) + "</div></div>" +
-                '<div class="meta"><span class="badges"><span class="badge">' + periodLabel(r.period) + "</span><span class=\"badge\">" + boardLabel(r.board) + "</span></span> · " + esc(r.resort) + "</div>" +
-                guest + note +
+                '<div class="card-info">' +
+                  '<div class="date">' + esc(formatDateShort(r.date)) + "</div>" +
+                  '<div class="price">' + formatYen(r.price) + "</div>" +
+                  guest +
+                  '<div class="resort-line">' + esc(r.resort) + "</div>" +
+                  note +
+                "</div>" +
+                '<div class="card-chips">' +
+                  '<span class="badge">' + periodLabel(r.period) + "</span>" +
+                  '<span class="badge">' + boardLabel(r.board) + "</span>" +
+                "</div>" +
               "</button>" +
               '<button type="button" class="card-cover" data-thumbs-for="' + esc(r.id) + '" data-record="' + esc(r.id) + '" aria-label="查看照片"></button>' +
             "</div>" +
