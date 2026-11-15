@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="card-name-half-lower">
+<html lang="zh-Hant" data-app-version="card-compact">
 <head>
-  <!-- card-name-half-lower -->
+  <!-- card-compact -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1555,6 +1555,126 @@ textarea { min-height: 88px; resize: vertical; }
     /* card-name-half-lower: drop guest name by about half a line under 雪場 */
     .card-details .guest-line {
       margin-top: 0.5em;
+    }
+
+    /* card-compact: ~2/3 vertical scale for cards, fonts, and pills; no overflow */
+    .card-main {
+      padding: 8px 10px 8px 12px;
+      min-height: 96px;
+    }
+    .card--with-photo .card-main {
+      padding: 8px 4px 8px 12px;
+      min-height: 0;
+    }
+    .card:not(.card--with-photo) .card-main {
+      min-height: 96px;
+    }
+    @media (max-width: 389px) {
+      .card:not(.card--with-photo) .card-main { min-height: 92px; }
+    }
+    @media (min-width: 414px) {
+      .card:not(.card--with-photo) .card-main { min-height: 104px; }
+    }
+    .card--with-photo .card-cover {
+      width: 76px;
+      height: auto;
+      min-height: 76px;
+      align-self: stretch;
+      margin: 8px 8px 8px 0;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    @media (max-width: 389px) {
+      .card--with-photo .card-cover {
+        width: 72px;
+        min-height: 72px;
+      }
+    }
+    @media (min-width: 414px) {
+      .card--with-photo .card-cover {
+        width: 80px;
+        min-height: 80px;
+      }
+    }
+    .date-strip {
+      width: 48px;
+      justify-content: space-between;
+      gap: 3px;
+      padding: 4px 3px 0;
+      overflow: hidden;
+    }
+    @media (min-width: 414px) {
+      .date-strip { width: 52px; }
+    }
+    .date-strip .d-day,
+    .date-strip .d-week {
+      font-size: 11px;
+      line-height: 1;
+      height: 15px;
+      min-height: 15px;
+      max-height: 15px;
+      padding: 0 1px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+    .date-strip .badge {
+      height: 15px;
+      min-height: 15px;
+      max-height: 15px;
+      font-size: 10px;
+      line-height: 1;
+      padding: 0 1px;
+      overflow: hidden;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+    @media (min-width: 414px) {
+      .date-strip .d-day,
+      .date-strip .d-week { font-size: 12px; }
+      .date-strip .badge { font-size: 11px; }
+    }
+    .date-strip .chip-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
+    }
+    .card-details {
+      justify-content: flex-start;
+      padding-top: 4px;
+      gap: 4px;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .card-details .price,
+    .card-details .resort-line,
+    .card-details .guest-line {
+      font-size: 15px;
+      line-height: 1.1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
+      min-width: 0;
+    }
+    .card-details .price {
+      margin-bottom: calc(1em - 4px);
+    }
+    .card-details .guest-line {
+      margin-top: 0.5em;
+    }
+    .card-details .note {
+      overflow: hidden;
+      max-width: 100%;
+      min-width: 0;
+    }
+    @media (min-width: 414px) {
+      .card-details .price,
+      .card-details .resort-line,
+      .card-details .guest-line { font-size: 16px; }
     }
 </style>
 </head>
