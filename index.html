@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="card-meta-midright">
+<html lang="zh-Hant" data-app-version="card-date-plain-black">
 <head>
-  <!-- card-meta-midright -->
+  <!-- card-date-plain-black -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1833,6 +1833,77 @@ textarea { min-height: 88px; resize: vertical; }
     }
     @media (min-width: 414px) {
       .card-details .meta-line { font-size: 16px; }
+    }
+
+    /* card-date-plain-black: left-strip labels match price size, no pill, near-black */
+    .date-strip {
+      width: 60px;
+      padding: 4px 2px 0;
+      justify-content: space-between;
+      gap: 3px;
+      overflow: visible;
+    }
+    @media (min-width: 414px) {
+      .date-strip { width: 66px; }
+    }
+    .date-strip .d-day,
+    .date-strip .d-week,
+    .date-strip .badge,
+    .date-strip .badge-full,
+    .date-strip .badge-half,
+    .date-strip .badge-snowboard,
+    .date-strip .badge-ski {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: auto;
+      min-height: 0;
+      max-height: none;
+      padding: 0;
+      margin: 0;
+      border: 0;
+      border-radius: 0;
+      background: none;
+      box-shadow: none;
+      color: #111111;
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      overflow: visible;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .date-strip .chip-label {
+      transform: none;
+      font-size: inherit;
+      font-weight: 800;
+      color: inherit;
+      letter-spacing: inherit;
+      overflow: visible;
+      max-width: none;
+    }
+    @media (min-width: 414px) {
+      .date-strip .d-day,
+      .date-strip .d-week,
+      .date-strip .badge,
+      .date-strip .badge-full,
+      .date-strip .badge-half,
+      .date-strip .badge-snowboard,
+      .date-strip .badge-ski { font-size: 16px; }
+    }
+    :root[data-theme="dark"] .date-strip .d-day,
+    :root[data-theme="dark"] .date-strip .d-week,
+    :root[data-theme="dark"] .date-strip .badge {
+      color: #f2f4f6;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .date-strip .d-day,
+      :root:not([data-theme="light"]) .date-strip .d-week,
+      :root:not([data-theme="light"]) .date-strip .badge {
+        color: #f2f4f6;
+      }
     }
 </style>
 </head>
