@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="card-date-plain-black">
+<html lang="zh-Hant" data-app-version="card-meta-black">
 <head>
-  <!-- card-date-plain-black -->
+  <!-- card-meta-black -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1902,6 +1902,19 @@ textarea { min-height: 88px; resize: vertical; }
       :root:not([data-theme="light"]) .date-strip .d-day,
       :root:not([data-theme="light"]) .date-strip .d-week,
       :root:not([data-theme="light"]) .date-strip .badge {
+        color: #f2f4f6;
+      }
+    }
+
+    /* card-meta-black: 人數/程度 same near-black as the date strip */
+    .card-details .meta-line {
+      color: #111111;
+    }
+    :root[data-theme="dark"] .card-details .meta-line {
+      color: #f2f4f6;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .card-details .meta-line {
         color: #f2f4f6;
       }
     }
