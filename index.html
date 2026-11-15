@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="card-meta-green">
+<html lang="zh-Hant" data-app-version="card-meta-midright">
 <head>
-  <!-- card-meta-green -->
+  <!-- card-meta-midright -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1777,6 +1777,63 @@ textarea { min-height: 88px; resize: vertical; }
 
     .card--with-photo .card-main { padding-right: 8px; }
     .card-info, .card-details { min-width: 0; overflow: hidden; }
+
+    /* card-meta-midright: 人數/程度 in the gap, slightly right of center, left-aligned */
+    .card-details .info-grid {
+      display: grid;
+      grid-template-columns: minmax(0, max-content) minmax(0, 3fr) minmax(3.25em, 2fr);
+      grid-template-rows: auto auto;
+      column-gap: 8px;
+      align-items: baseline;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .card-details .info-grid .resort-line {
+      grid-column: 1;
+      grid-row: 1;
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .card-details .info-grid .guest-line {
+      grid-column: 1;
+      grid-row: 2;
+      margin-top: 0.5em;
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .card-details .info-grid .extra-count {
+      grid-column: 3;
+      grid-row: 1;
+      justify-self: start;
+      max-width: 100%;
+    }
+    .card-details .info-grid .extra-level {
+      grid-column: 3;
+      grid-row: 2;
+      margin-top: 0.5em;
+      justify-self: start;
+      max-width: 100%;
+    }
+    .card-details .meta-line {
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--money);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+    @media (min-width: 414px) {
+      .card-details .meta-line { font-size: 16px; }
+    }
 </style>
 </head>
 <body>
@@ -2726,17 +2783,13 @@ function normalizeDigits(s) {
         var note = r.note ? '<div class="note">' + esc(r.note) + "</div>" : "";
         var countHtml = r.headcount ? '<div class="meta-line extra-count">' + esc(headcountLabel(r.headcount)) + "</div>" : "";
         var levelHtml = r.level ? '<div class="meta-line extra-level">' + esc(r.level) + "</div>" : "";
-        var resortRow = '<div class="info-row">' +
+        var guestHtml = (r.guestName || r.level) ? ('<div class="guest-line">' + (r.guestName ? esc(r.guestName) : "") + "</div>") : "";
+        var mid = '<div class="info-grid">' +
           '<div class="resort-line">' + esc(r.resort) + "</div>" +
           countHtml +
+          guestHtml +
+          levelHtml +
         "</div>";
-        var guestRow = "";
-        if (r.guestName || r.level) {
-          guestRow = '<div class="info-row info-row--guest">' +
-            '<div class="guest-line">' + (r.guestName ? esc(r.guestName) : "") + "</div>" +
-            levelHtml +
-          "</div>";
-        }
         var d = dateParts(r.date);
         return (
           '<article class="card" data-id="' + esc(r.id) + '">' +
@@ -2751,8 +2804,7 @@ function normalizeDigits(s) {
                   "</div>" +
                   '<div class="card-details">' +
                     '<div class="price">' + formatYen(r.price) + "</div>" +
-                    resortRow +
-                    guestRow +
+                    mid +
                     note +
                   "</div>" +
                 "</div>" +
