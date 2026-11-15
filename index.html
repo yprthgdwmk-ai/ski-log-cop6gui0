@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-app-version="card-date-chip-style">
+<html lang="zh-Hant" data-app-version="card-date-even-gaps">
 <head>
-  <!-- card-date-chip-style -->
+  <!-- card-date-even-gaps -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1509,6 +1509,48 @@ textarea { min-height: 88px; resize: vertical; }
         color: #346a76;
       }
     }
+
+    /* card-date-even-gaps: equal vertical gaps among the four left-strip pills */
+    .date-strip {
+      justify-content: space-between;
+      gap: 4px;
+      padding: 6px 5px 0;
+    }
+    .date-strip .badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-width: 0;
+      height: 26px;
+      min-height: 26px;
+      padding: 0 2px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      color: #346a76;
+      background: #e7f2f4;
+      border: 1px solid rgba(52, 106, 118, 0.12);
+      box-shadow: none;
+    }
+    .date-strip .badge-full,
+    .date-strip .badge-half,
+    .date-strip .badge-snowboard,
+    .date-strip .badge-ski {
+      color: #346a76;
+      background: #e7f2f4;
+      border-color: rgba(52, 106, 118, 0.12);
+    }
+    @media (min-width: 414px) {
+      .date-strip .badge {
+        height: 28px;
+        min-height: 28px;
+        font-size: 14px;
+      }
+    }
 </style>
 </head>
 <body>
@@ -2432,15 +2474,11 @@ textarea { min-height: 88px; resize: vertical; }
             '<div class="card-row">' +
               '<button type="button" class="card-main" data-edit="' + esc(r.id) + '" aria-label="編輯 ' + esc(formatDate(r.date)) + " " + esc(r.resort) + '">' +
                 '<div class="card-info">' +
-                  '<div class="date-strip">' +
-                    '<div class="date-block" aria-label="' + esc(d.label) + '">' +
-                      '<span class="d-day">' + esc(d.day) + "</span>" +
-                      '<span class="d-week">（' + esc(d.week) + "）</span>" +
-                    "</div>" +
-                    '<div class="card-chips">' +
-                      '<span class="badge badge-period badge-' + r.period + '"><span class="chip-label">' + periodLabel(r.period) + "</span></span>" +
-                      '<span class="badge badge-board badge-' + r.board + '"><span class="chip-label">' + boardLabel(r.board) + "</span></span>" +
-                    "</div>" +
+                  '<div class="date-strip" aria-label="' + esc(d.label) + '">' +
+                    '<span class="d-day">' + esc(d.day) + "</span>" +
+                    '<span class="d-week">（' + esc(d.week) + "）</span>" +
+                    '<span class="badge badge-period badge-' + r.period + '"><span class="chip-label">' + periodLabel(r.period) + "</span></span>" +
+                    '<span class="badge badge-board badge-' + r.board + '"><span class="chip-label">' + boardLabel(r.board) + "</span></span>" +
                   "</div>" +
                   '<div class="card-details">' +
                     '<div class="price">' + formatYen(r.price) + "</div>" +
